@@ -2,186 +2,207 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8" />
-  <title>Panel Licda (Host) — Viaje Digital del Cliente</title>
+  <title>Panel Host — Viaje Digital del Cliente</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <style>
     body{margin:0;font-family:Segoe UI,sans-serif;background:#0b1220;color:#e9eefc}
-    .wrap{max-width:980px;margin:0 auto;padding:18px}
+    .wrap{max-width:1100px;margin:0 auto;padding:18px}
     .card{background:#121c33;border:1px solid rgba(255,255,255,.08);border-radius:18px;padding:16px;margin:14px 0;box-shadow:0 10px 30px rgba(0,0,0,.25)}
     h1{margin:8px 0 4px}
     .muted{opacity:.75}
     input,select,button{padding:10px;border-radius:12px;border:1px solid rgba(255,255,255,.16);background:#0f1830;color:#fff;font-size:14px}
-    button{cursor:pointer;border:none;background:#2f6bff;font-weight:700}
+    button{cursor:pointer;border:none;background:#2f6bff;font-weight:800}
     button:hover{filter:brightness(1.05)}
     .row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
     .row > *{flex:1}
-    .pill{display:inline-block;padding:6px 10px;border-radius:999px;background:rgba(255,255,255,.08);margin-right:6px}
+    .pill{display:inline-block;padding:6px 10px;border-radius:999px;background:rgba(255,255,255,.08);margin:6px 8px 0 0}
     table{width:100%;border-collapse:collapse;margin-top:8px}
     th,td{padding:10px;border-bottom:1px solid rgba(255,255,255,.08);text-align:left;font-size:14px}
     th{opacity:.8}
     .ok{color:#74ffb4}
-    .warn{color:#ffd479}
     .bad{color:#ff7a7a}
+    .btn2{background:#18b67a}
+    .btn3{background:#ffb020;color:#1b1200}
+    .btn4{background:#ff4d6d}
     .right{text-align:right}
+    .grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}
+    @media (max-width:900px){.grid{grid-template-columns:1fr}}
   </style>
 </head>
 
 <body>
   <div class="wrap">
-    <h1>👩‍🏫 Panel Licda (Host)</h1>
+    <h1>👩‍🏫 Panel Host (Licda = tú)</h1>
     <div class="muted">Control en vivo — El Viaje Digital del Cliente</div>
 
-    <!-- Bloque de acceso -->
     <div class="card" id="loginCard">
       <h3>🔐 Acceso</h3>
       <div class="row">
-        <input id="pin" placeholder="PIN del host (ej. 2026)" />
-        <button id="btnEntrarHost">Entrar</button>
-      </div>
-      <div class="muted" style="margin-top:8px">
-        *Este PIN solo es una barrera básica para que los alumnos no entren por accidente.
+        <input id="pin" placeholder="PIN (2026)" />
+        <button id="btnLogin">Entrar</button>
       </div>
     </div>
 
-    <!-- Panel -->
-    <div class="card" id="panelCard" style="display:none;">
-      <h3>🎛️ Controles</h3>
-      <div class="row">
-        <select id="estadoJuego">
-          <option value="lobby">Lobby (esperando)</option>
-          <option value="nivel1">Nivel 1</option>
-          <option value="nivel2">Nivel 2</option>
-          <option value="nivel3">Nivel 3</option>
-          <option value="final">Final (podio)</option>
-        </select>
+    <div id="panel" style="display:none;">
+      <div class="card">
+        <h3>🎛️ Controles rápidos</h3>
+        <div class="grid">
+          <div>
+            <div class="row">
+              <select id="estado">
+                <option value="lobby">Lobby</option>
+                <option value="nivel1">Nivel 1</option>
+                <option value="nivel2">Nivel 2</option>
+                <option value="nivel3">Nivel 3</option>
+                <option value="final">Final (Podio)</option>
+              </select>
 
-        <select id="ambiente">
-          <option value="dia">🌞 Día</option>
-          <option value="tarde">🌇 Tarde</option>
-          <option value="noche">🌙 Noche</option>
-        </select>
+              <select id="ambiente">
+                <option value="dia">🌞 Día</option>
+                <option value="tarde">🌇 Tarde</option>
+                <option value="noche">🌙 Noche</option>
+              </select>
 
-        <button id="btnAplicar">Aplicar cambios</button>
+              <button id="btnAplicar">Aplicar</button>
+            </div>
+
+            <div style="margin-top:10px">
+              <span class="pill">👥 En vivo: <b id="count">0</b></span>
+              <span class="pill">Estado: <b id="estadoTxt">lobby</b></span>
+              <span class="pill">Ambiente: <b id="ambienteTxt">dia</b></span>
+              <span class="pill">Pregunta: <b id="qTxt">—</b></span>
+            </div>
+          </div>
+
+          <div>
+            <div class="row">
+              <button class="btn2" id="btnStartQ">▶ Lanzar pregunta</button>
+              <button class="btn3" id="btnNextQ">⏭ Siguiente</button>
+              <button class="btn4" id="btnFinal">🏆 Final/Podio</button>
+              <button id="btnReset">🔄 Reset</button>
+            </div>
+            <div class="muted" style="margin-top:8px">
+              *“Lanzar pregunta” inicia el timer (25s) y sincroniza a todos.
+            </div>
+          </div>
+        </div>
       </div>
 
-      <div style="margin-top:10px">
-        <span class="pill">👥 En salón: <b id="count">0</b></span>
-        <span class="pill">Estado: <b id="estadoTxt">lobby</b></span>
-        <span class="pill">Ambiente: <b id="ambienteTxt">dia</b></span>
-      </div>
-    </div>
-
-    <!-- Lista de jugadores -->
-    <div class="card" id="playersCard" style="display:none;">
-      <h3>🏫 Estudiantes en vivo</h3>
-      <table>
-        <thead>
-          <tr>
-            <th>Nombre</th>
-            <th>Transporte</th>
-            <th>Look</th>
-            <th>Vidas</th>
-            <th>Estado</th>
-          </tr>
-        </thead>
-        <tbody id="tbody"></tbody>
-      </table>
-      <div class="muted" style="margin-top:8px">
-        *Si ves duplicados, se arregla con la presencia (lo hacemos después al 100%).
+      <div class="card">
+        <h3>🏫 Estudiantes</h3>
+        <table>
+          <thead>
+            <tr>
+              <th>Nombre</th><th>Vidas</th><th>Score</th><th>Estado</th><th>Último</th>
+            </tr>
+          </thead>
+          <tbody id="tbody"></tbody>
+        </table>
       </div>
     </div>
   </div>
 
   <script type="module">
-    import { escucharSalon } from "./firebase.js";
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/12.8.0/firebase-app.js";
-    import { getDatabase, ref, set, onValue } from "https://www.gstatic.com/firebasejs/12.8.0/firebase-database.js";
+    import { escucharSalon, escucharControl, hostSetControl } from "./firebase.js";
 
-    // Misma config del proyecto
-    const firebaseConfig = {
-      apiKey: "AIzaSyD5Rx36FYLIi3nw09exLZrg3yU241DQ5gI",
-      authDomain: "u07059.firebaseapp.com",
-      databaseURL: "https://u07059-default-rtdb.firebaseio.com",
-      projectId: "u07059",
-      storageBucket: "u07059.firebasestorage.app",
-      messagingSenderId: "155102720783",
-      appId: "1:155102720783:web:30d81bcf84398d4316047a"
-    };
-
-    const app = initializeApp(firebaseConfig);
-    const db = getDatabase(app);
-
-    // refs
-    const controlRef = ref(db, "control");
-
-    // UI
-    const loginCard = document.getElementById("loginCard");
-    const panelCard = document.getElementById("panelCard");
-    const playersCard = document.getElementById("playersCard");
-
-    const pinInput = document.getElementById("pin");
-    const btnEntrarHost = document.getElementById("btnEntrarHost");
-
-    const estadoJuego = document.getElementById("estadoJuego");
-    const ambiente = document.getElementById("ambiente");
-    const btnAplicar = document.getElementById("btnAplicar");
-
-    const count = document.getElementById("count");
-    const estadoTxt = document.getElementById("estadoTxt");
-    const ambienteTxt = document.getElementById("ambienteTxt");
-
-    const tbody = document.getElementById("tbody");
-
-    // PIN básico (cámbialo si quieres)
     const HOST_PIN = "2026";
 
-    btnEntrarHost.addEventListener("click", () => {
-      if ((pinInput.value || "").trim() !== HOST_PIN) {
+    const loginCard = document.getElementById("loginCard");
+    const panel = document.getElementById("panel");
+    document.getElementById("btnLogin").onclick = () => {
+      if ((document.getElementById("pin").value || "").trim() !== HOST_PIN) {
         alert("PIN incorrecto 🙈");
         return;
       }
       loginCard.style.display = "none";
-      panelCard.style.display = "block";
-      playersCard.style.display = "block";
-    });
+      panel.style.display = "block";
+    };
 
-    // Aplicar controles (estado + ambiente)
-    btnAplicar.addEventListener("click", async () => {
-      await set(controlRef, {
-        estado: estadoJuego.value,
-        ambiente: ambiente.value,
-        updatedAt: Date.now()
+    const estado = document.getElementById("estado");
+    const ambiente = document.getElementById("ambiente");
+    const btnAplicar = document.getElementById("btnAplicar");
+    const btnStartQ = document.getElementById("btnStartQ");
+    const btnNextQ = document.getElementById("btnNextQ");
+    const btnFinal = document.getElementById("btnFinal");
+    const btnReset = document.getElementById("btnReset");
+
+    const count = document.getElementById("count");
+    const estadoTxt = document.getElementById("estadoTxt");
+    const ambienteTxt = document.getElementById("ambienteTxt");
+    const qTxt = document.getElementById("qTxt");
+
+    let control = {};
+    let qIndex = 0;
+
+    // Aplicar estado/ambiente
+    btnAplicar.onclick = async () => {
+      await hostSetControl({ estado: estado.value, ambiente: ambiente.value });
+    };
+
+    // Lanzar pregunta (25s)
+    btnStartQ.onclick = async () => {
+      const deadline = Date.now() + 25000;
+      await hostSetControl({ qIndex, deadline, qOpen: true });
+    };
+
+    // Siguiente pregunta
+    btnNextQ.onclick = async () => {
+      qIndex += 1;
+      const deadline = Date.now() + 25000;
+      await hostSetControl({ qIndex, deadline, qOpen: true });
+    };
+
+    // Final/Podio
+    btnFinal.onclick = async () => {
+      await hostSetControl({ estado: "final", qOpen: false, deadline: 0 });
+    };
+
+    // Reset
+    btnReset.onclick = async () => {
+      qIndex = 0;
+      await hostSetControl({
+        estado: "lobby",
+        ambiente: "dia",
+        qIndex: 0,
+        qOpen: false,
+        deadline: 0,
+        podium: null
       });
-      alert("✅ Cambios aplicados");
+      alert("✅ Reset listo (los jugadores conservan registro; si quieres limpio total, me dices y lo hacemos).");
+    };
+
+    // Leer control actual en vivo
+    escucharControl((c) => {
+      control = c || {};
+      estadoTxt.textContent = control.estado || "lobby";
+      ambienteTxt.textContent = control.ambiente || "dia";
+      qTxt.textContent = (control.qIndex ?? "—");
+      estado.value = control.estado || "lobby";
+      ambiente.value = control.ambiente || "dia";
+      if (typeof control.qIndex === "number") qIndex = control.qIndex;
     });
 
-    // Leer controles actuales en vivo
-    onValue(controlRef, (snap) => {
-      const c = snap.val() || { estado: "lobby", ambiente: "dia" };
-      estadoTxt.textContent = c.estado || "lobby";
-      ambienteTxt.textContent = c.ambiente || "dia";
-      estadoJuego.value = c.estado || "lobby";
-      ambiente.value = c.ambiente || "dia";
-    });
-
-    // Lista de jugadores (salón)
+    // Lista de estudiantes
+    const tbody = document.getElementById("tbody");
     escucharSalon((jugadores) => {
-      count.textContent = jugadores.length;
+      const vivos = jugadores.filter(j => j && j.estado !== "salio");
+      count.textContent = vivos.length;
 
       tbody.innerHTML = "";
       jugadores
-        .sort((a,b)=> (b.updatedAt||0)-(a.updatedAt||0))
-        .slice(0, 60)
+        .slice()
+        .sort((a,b)=> (b.score||0)-(a.score||0))
+        .slice(0,60)
         .forEach(j => {
           const tr = document.createElement("tr");
-
-          const estadoClass = j.estado === "salio" ? "bad" : "ok";
+          const estadoClass = (j.vidas <= 0 || j.estado === "eliminado") ? "bad" : "ok";
+          const ultimo = j.ultimo?.qid ? (j.ultimo.correcto ? "✅" : "❌") : "—";
           tr.innerHTML = `
             <td><b>${j.nombre || "Anon"}</b></td>
-            <td>${j.transporte || "-"}</td>
-            <td>${(j.piel||"-")} / ${(j.pelo||"-")} / ${(j.ropa||"-")}</td>
             <td>${j.vidas ?? 5}</td>
-            <td class="${estadoClass}">${j.estado || "en_salon"}</td>
+            <td>${j.score ?? 0}</td>
+            <td class="${estadoClass}">${j.estado || "—"}</td>
+            <td>${ultimo}</td>
           `;
           tbody.appendChild(tr);
         });
@@ -189,3 +210,4 @@
   </script>
 </body>
 </html>
+
