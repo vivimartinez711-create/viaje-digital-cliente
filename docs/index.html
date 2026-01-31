@@ -1,107 +1,44 @@
-<!DOCTYPE html>
-<html lang="es">
-<head>
-  <meta charset="UTF-8">
-  <title>El Viaje Digital del Cliente</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-  <style>
-    body {
-      margin: 0;
-      font-family: "Segoe UI", sans-serif;
-      background: linear-gradient(#b3d9ff, #e6f2ff);
-      text-align: center;
-    }
-    h1 { margin-top: 30px; }
-
-    .card {
-      background: white;
-      width: 90%;
-      max-width: 420px;
-      margin: 30px auto;
-      padding: 25px;
-      border-radius: 20px;
-      box-shadow: 0 10px 25px rgba(0,0,0,.15);
-    }
-
-    input, select, button {
-      width: 100%;
-      margin-top: 12px;
-      padding: 10px;
-      border-radius: 10px;
-      border: 1px solid #ccc;
-      font-size: 1em;
-    }
-
-    button {
-      background: #004aad;
-      color: white;
-      font-weight: bold;
-      cursor: pointer;
-      margin-top: 18px;
-    }
-
-    button:hover { background: #00317a; }
-
-    #lista {
-      text-align: left;
-      margin-top: 10px;
-      font-size: 0.95em;
-      line-height: 1.6;
-    }
-  </style>
-</head>
-
-<body>
-
-<h1>🎓 El Viaje Digital del Cliente</h1>
-<p>Experiencia universitaria interactiva</p>
-
-<div class="card">
-
-  <h3>👤 Tu nombre</h3>
-  <input id="nombre" placeholder="Ej. Vivi, Ana, Carlos">
-
-  <hr>
-
-  <h3>🏫 Salón (en vivo)</h3>
-  <div id="lista">Cargando salón...</div>
-
-  <button id="btnEntrar">Entrar a la Universidad</button>
-
-  <p style="font-size:0.85em; margin-top:10px">
-    Cuando la Licda inicie el juego, entrarás automáticamente 🎮
-  </p>
-</div>
-
-<!-- CONEXIÓN FIREBASE -->
 <script type="module">
   import { entrarAlSalon, escucharSalon } from "./firebase.js";
 
-  const btn = document.getElementById("btnEntrar");
+  const listaDiv = document.getElementById("lista");
+  const btn = document.querySelector("button[onclick='entrar()']");
 
-  btn.addEventListener("click", () => {
-    const nombre = document.getElementById("nombre").value.trim();
-    if (!nombre) {
-      alert("Escribe tu nombre 😊");
+  // Pintar salón
+  escucharSalon((jugadores) => {
+    if (!listaDiv) return;
+
+    if (!jugadores.length) {
+      listaDiv.innerHTML = "Aún no hay estudiantes en el salón…";
       return;
     }
-    entrarAlSalon(nombre);
+
+    jugadores.sort((a,b) => (b.updatedAt||0) - (a.updatedAt||0));
+
+    listaDiv.innerHTML = jugadores
+      .slice(0, 50)
+      .map(j => {
+        const hearts = "❤️".repeat(Math.max(0, Math.min(10, Number(j.vidas ?? 5))));
+        const estado = j.estado === "salio" ? " — salió" : "";
+        return `• ${j.nombre || "Anon"} ${hearts}${estado}`;
+      })
+      .join("<br>");
   });
 
-  escucharSalon((personas) => {
-    const lista = document.getElementById("lista");
-    lista.innerHTML = "";
+  // Tu función entrar() (la conectamos a Firebase)
+  window.entrar = function () {
+    const nombre = document.getElementById("nombre")?.value?.trim();
+    if (!nombre) return alert("Escribe tu nombre primero 😊");
 
-    personas.forEach(p => {
-      const linea = document.createElement("div");
-      linea.textContent =
-        "• " + p.nombre +
-        (p.estado === "salió" ? " — salió" : " ❤️❤️❤️❤️");
-      lista.appendChild(linea);
-    });
-  });
+    const transporte = document.getElementById("transporte")?.value || "bus";
+    const piel = document.getElementById("piel")?.value || "media";
+    const pelo = document.getElementById("pelo")?.value || "negro";
+    const ropa = document.getElementById("ropa")?.value || "azul";
+
+    entrarAlSalon({ nombre, transporte, piel, pelo, ropa, vidas: 5 });
+
+    alert("¡Listo! Entraste al salón 🎓✅\nAhora todos te verán en vivo.");
+    if (btn) btn.disabled = true;
+  };
 </script>
 
-</body>
-</html>
