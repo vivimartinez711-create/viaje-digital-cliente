@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <title>El Viaje Digital del Cliente</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <style>
+    body {
+      margin: 0;
+      font-family: "Segoe UI", sans-serif;
+      background: linear-gradient(#b3d9ff, #e6f2ff);
+      text-align: center;
+    }
+    h1 { margin-top: 30px; }
+    .card {
+      background: white;
+      width: 90%;
+      max-width: 420px;
+      margin: 30px auto;
+      padding: 25px;
+      border-radius: 20px;
+      box-shadow: 0 10px 25px rgba(0,0,0,.15);
+    }
+    select, input, button {
+      width: 100%;
+      margin-top: 12px;
+      padding: 10px;
+      border-radius: 10px;
+      border: 1px solid #ccc;
+      font-size: 1em;
+    }
+    button {
+      background: #004aad;
+      color: white;
+      font-weight: bold;
+      cursor: pointer;
+    }
+    button:hover { background: #00317a; }
+    .emoji { font-size: 2em; margin-top: 10px; }
+  </style>
+</head>
+
+<body>
+
+<h1>🎓 El Viaje Digital del Cliente</h1>
+<p>Experiencia universitaria interactiva</p>
+
+<div class="card">
+  <h3>👤 Tu nombre</h3>
+  <input id="nombre" placeholder="Ej. Ana, Carlos..." />
+
+  <h3>🚍 ¿Cómo llegas a la U?</h3>
+  <select id="transporte">
+    <option value="bus">🚌 Bus (gallinera)</option>
+    <option value="carro">🚗 Carro</option>
+    <option value="moto">🏍️ Moto</option>
+    <option value="pie">🚶 A pie</option>
+  </select>
+
+  <h3>🎨 Personaliza tu personaje</h3>
+  <select id="piel">
+    <option value="clara">Piel clara</option>
+    <option value="media">Piel media</option>
+    <option value="oscura">Piel oscura</option>
+  </select>
+
+  <select id="pelo">
+    <option value="negro">Pelo negro</option>
+    <option value="castaño">Pelo castaño</option>
+    <option value="rubio">Pelo rubio</option>
+  </select>
+
+  <select id="ropa">
+    <option value="azul">Azul</option>
+    <option value="verde">Verde</option>
+    <option value="rosa">Rosa</option>
+    <option value="gris">Gris</option>
+  </select>
+
+  <div class="emoji">🎒👩‍🎓👨‍🎓</div>
+
+  <button onclick="entrar()">Entrar a la Universidad</button>
+</div>
+
+<script>
+function entrar() {
+  const nombre = document.getElementById("nombre").value;
+  if (!nombre) {
+    alert("Escribe tu nombre primero 😊");
+    return;
+  }
+
+  alert("¡Bienvenida/o a la Universidad, " + nombre + "!\n\nPrepárate para iniciar el viaje 🎮✨");
+  // Aquí conectaremos Firebase y el juego en vivo
+}
+</script>
+
+</body>
+</html>
