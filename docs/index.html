@@ -1,43 +1,188 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-    <meta charset="UTF-8">
-    <title>Juego</title>
-    <style>
-        body {
-            background: #111;
-            color: white;
-            font-family: Arial, sans-serif;
-            text-align: center;
-            padding-top: 100px;
-        }
-        button {
-            padding: 10px 20px;
-            border-radius: 8px;
-            border: none;
-            background: #ff4081;
-            color: white;
-            font-size: 16px;
-            cursor: pointer;
-        }
-    </style>
+  <meta charset="UTF-8" />
+  <title>El Viaje Digital del Cliente</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+  <style>
+    body {
+      margin: 0;
+      font-family: "Segoe UI", sans-serif;
+      background: linear-gradient(#b3d9ff, #e6f2ff);
+      text-align: center;
+    }
+
+    h1 {
+      margin-top: 30px;
+    }
+
+    p {
+      margin-top: 5px;
+    }
+
+    .card {
+      background: white;
+      width: 90%;
+      max-width: 420px;
+      margin: 30px auto;
+      padding: 25px;
+      border-radius: 20px;
+      box-shadow: 0 10px 25px rgba(0,0,0,.15);
+    }
+
+    h3 {
+      margin-bottom: 5px;
+    }
+
+    select, input, button {
+      width: 100%;
+      margin-top: 12px;
+      padding: 10px;
+      border-radius: 10px;
+      border: 1px solid #ccc;
+      font-size: 1em;
+    }
+
+    button {
+      background: #004aad;
+      color: white;
+      font-weight: bold;
+      cursor: pointer;
+      border: none;
+    }
+
+    button:hover {
+      background: #00317a;
+    }
+
+    .emoji {
+      font-size: 2em;
+      margin-top: 12px;
+    }
+
+    hr {
+      margin: 18px 0;
+    }
+
+    #lista {
+      text-align: left;
+      font-size: 0.95em;
+      line-height: 1.6;
+      background: #f7f7f7;
+      padding: 10px;
+      border-radius: 10px;
+      min-height: 40px;
+    }
+  </style>
 </head>
+
 <body>
 
-<h1>🚀 Nivel 1</h1>
-<p>Pregunta de prueba</p>
+  <h1>🎓 El Viaje Digital del Cliente</h1>
+  <p>Experiencia universitaria interactiva</p>
 
-<button onclick="alert('Correcto 🎉')">Responder</button>
+  <div class="card">
 
-<br><br>
-<button onclick="volver()">⬅ Volver al inicio</button>
+    <h3>👤 Tu nombre</h3>
+    <input id="nombre" placeholder="Ej. Vivi, Ana, Carlos" />
 
-<script>
-function volver() {
-    window.location.href = "index.html";
-}
-</script>
+    <hr>
+
+    <h3>🚍 ¿Cómo llegas a la U?</h3>
+    <select id="transporte">
+      <option value="bus">🚌 Bus (gallinera)</option>
+      <option value="carro">🚗 Carro</option>
+      <option value="moto">🏍️ Moto</option>
+      <option value="pie">🚶 A pie</option>
+    </select>
+
+    <h3>🎨 Personaliza tu personaje</h3>
+
+    <select id="piel">
+      <option value="clara">Piel clara</option>
+      <option value="media">Piel media</option>
+      <option value="oscura">Piel oscura</option>
+    </select>
+
+    <select id="pelo">
+      <option value="negro">Pelo negro</option>
+      <option value="castaño">Pelo castaño</option>
+      <option value="rubio">Pelo rubio</option>
+    </select>
+
+    <select id="ropa">
+      <option value="azul">Camisa/Blusa azul</option>
+      <option value="verde">Camisa/Blusa verde</option>
+      <option value="rosa">Camisa/Blusa rosa</option>
+      <option value="gris">Camisa/Blusa gris</option>
+    </select>
+
+    <div class="emoji">🎒👩‍🎓👨‍🎓</div>
+
+    <hr>
+
+    <h3>🏫 Salón (en vivo)</h3>
+    <div id="lista">Cargando salón…</div>
+
+    <hr>
+
+    <button onclick="entrar()">Entrar a la Universidad</button>
+
+    <p style="font-size:0.85em; margin-top:10px;">
+      Cuando la Licda inicie el juego, aquí pasarán a la siguiente fase 🎮
+    </p>
+  </div>
+
+  <!-- 🔥 SCRIPT FIREBASE (NO CAMBIAR EL type="module") -->
+  <script type="module">
+    import { entrarAlSalon, escucharSalon } from "./firebase.js";
+
+    const listaDiv = document.getElementById("lista");
+
+    // Escuchar salón en tiempo real
+    escucharSalon((jugadores) => {
+      if (!jugadores || jugadores.length === 0) {
+        listaDiv.innerHTML = "Salón vacío…";
+        return;
+      }
+
+      jugadores.sort((a, b) => (b.updatedAt || 0) - (a.updatedAt || 0));
+
+      listaDiv.innerHTML = jugadores
+        .map(j => {
+          const corazones = "❤️".repeat(Math.max(1, j.vidas || 5));
+          const estado = j.estado === "salio" ? " — salió" : "";
+          return `• ${j.nombre} ${corazones}${estado}`;
+        })
+        .join("<br>");
+    });
+
+    // Función del botón
+    window.entrar = function () {
+      const nombre = document.getElementById("nombre").value.trim();
+      if (!nombre) {
+        alert("Escribe tu nombre primero 😊");
+        return;
+      }
+
+      const transporte = document.getElementById("transporte").value;
+      const piel = document.getElementById("piel").value;
+      const pelo = document.getElementById("pelo").value;
+      const ropa = document.getElementById("ropa").value;
+
+      entrarAlSalon({
+        nombre,
+        transporte,
+        piel,
+        pelo,
+        ropa,
+        vidas: 5
+      });
+
+      alert("¡Entraste al salón 🎓✨");
+    };
+  </script>
 
 </body>
 </html>
-
