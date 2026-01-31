@@ -23,4 +23,3 @@ export const app = initializeApp(firebaseConfig);
 export const db = getDatabase(app);
 
 export { ref, set, onValue, update, serverTimestamp, onDisconnect };
-
