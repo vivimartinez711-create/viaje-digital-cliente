@@ -182,6 +182,45 @@
 
       alert("¡Entraste al salón 🎓✨");
     };
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/12.8.0/firebase-app.js";
+import { getDatabase, ref, onValue } from "https://www.gstatic.com/firebasejs/12.8.0/firebase-database.js";
+
+// MISMA CONFIG
+const firebaseConfig = {
+  apiKey: "AIzaSyD5Rx36FYLIi3nw09exLZrg3yU241DQ5gI",
+  authDomain: "u07059.firebaseapp.com",
+  databaseURL: "https://u07059-default-rtdb.firebaseio.com",
+  projectId: "u07059",
+  storageBucket: "u07059.firebasestorage.app",
+  messagingSenderId: "155102720783",
+  appId: "1:155102720783:web:30d81bcf84398d4316047a"
+};
+
+const app = initializeApp(firebaseConfig);
+const db = getDatabase(app);
+
+// Escuchar control del host
+const controlRef = ref(db, "control");
+
+onValue(controlRef, (snap) => {
+  const c = snap.val() || { estado: "lobby", ambiente: "dia" };
+
+  // 1) Cambiar fondo por ambiente
+  if (c.ambiente === "dia") {
+    document.body.style.background = "linear-gradient(#b3d9ff, #e6f2ff)";
+  } else if (c.ambiente === "tarde") {
+    document.body.style.background = "linear-gradient(#ffddb3, #fff3e6)";
+  } else if (c.ambiente === "noche") {
+    document.body.style.background = "linear-gradient(#0b1b3a, #1a2a52)";
+    document.body.style.color = "white";
+  }
+
+  // 2) Si host cambia a nivel1, mandamos a todos a juego.html
+  if (c.estado === "nivel1") {
+    window.location.href = "./juego.html";
+  }
+});
+
   </script>
 
 </body>
