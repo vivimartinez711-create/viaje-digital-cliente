@@ -20,26 +20,28 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const db = getDatabase(app);
 
-// Guarda jugador en el "salón"
+// 1) Guardar/actualizar jugador en el salón
 export function entrarAlSalon({ nombre, transporte, piel, pelo, ropa, vidas }) {
-  const id = (nombre || "anon").trim().toLowerCase().replace(/\s+/g, "_");
+  const cleanName = (nombre || "anon").trim();
+  const id = cleanName.toLowerCase().replace(/\s+/g, "_");
+
   const jugadorRef = ref(db, `salon/${id}`);
 
   const data = {
     id,
-    nombre,
+    nombre: cleanName,
     transporte,
     piel,
     pelo,
     ropa,
     vidas: Number(vidas ?? 5),
-    estado: "en salon",
+    estado: "en_salon",
     updatedAt: Date.now()
   };
 
   set(jugadorRef, data);
 
-  // si cierra pestaña / se desconecta
+  // Si se desconecta/cierra pestaña
   onDisconnect(jugadorRef).set({
     ...data,
     estado: "salio",
@@ -49,7 +51,7 @@ export function entrarAlSalon({ nombre, transporte, piel, pelo, ropa, vidas }) {
   return id;
 }
 
-// Escucha lista del salón (en vivo)
+// 2) Escuchar salón en vivo
 export function escucharSalon(callback) {
   const salonRef = ref(db, "salon");
   onValue(salonRef, (snapshot) => {
@@ -58,4 +60,3 @@ export function escucharSalon(callback) {
     callback(jugadores);
   });
 }
-
