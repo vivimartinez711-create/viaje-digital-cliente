@@ -1,9 +1,10 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8" />
+  <meta charset="UTF-8">
   <title>El Viaje Digital del Cliente</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
   <style>
     body {
       margin: 0;
@@ -12,6 +13,7 @@
       text-align: center;
     }
     h1 { margin-top: 30px; }
+
     .card {
       background: white;
       width: 90%;
@@ -21,7 +23,8 @@
       border-radius: 20px;
       box-shadow: 0 10px 25px rgba(0,0,0,.15);
     }
-    select, input, button {
+
+    input, select, button {
       width: 100%;
       margin-top: 12px;
       padding: 10px;
@@ -29,28 +32,23 @@
       border: 1px solid #ccc;
       font-size: 1em;
     }
+
     button {
       background: #004aad;
       color: white;
       font-weight: bold;
       cursor: pointer;
+      margin-top: 18px;
     }
+
     button:hover { background: #00317a; }
 
-    .emoji { font-size: 2em; margin-top: 10px; }
-    .live {
+    #lista {
       text-align: left;
+      margin-top: 10px;
       font-size: 0.95em;
       line-height: 1.6;
-      padding: 10px 12px;
-      border: 1px solid #e6e6e6;
-      border-radius: 12px;
-      background: #fafcff;
-      margin-top: 10px;
-      max-height: 160px;
-      overflow: auto;
     }
-    .hint { font-size: .9em; color:#444; margin-top: 10px; }
   </style>
 </head>
 
@@ -60,121 +58,43 @@
 <p>Experiencia universitaria interactiva</p>
 
 <div class="card">
+
   <h3>👤 Tu nombre</h3>
-  <input id="nombre" placeholder="Ej. Ana, Carlos..." />
+  <input id="nombre" placeholder="Ej. Vivi, Ana, Carlos">
 
-  <h3>🚍 ¿Cómo llegas a la U?</h3>
-  <select id="transporte">
-    <option value="bus">🚌 Bus (gallinera)</option>
-    <option value="carro">🚗 Carro</option>
-    <option value="moto">🏍️ Moto</option>
-    <option value="pie">🚶 A pie</option>
-  </select>
+  <hr>
 
-  <h3>🎨 Personaliza tu personaje</h3>
-  <select id="piel">
-    <option value="clara">Piel clara</option>
-    <option value="media">Piel media</option>
-    <option value="oscura">Piel oscura</option>
-  </select>
-
-  <select id="pelo">
-    <option value="negro">Pelo negro</option>
-    <option value="castaño">Pelo castaño</option>
-    <option value="rubio">Pelo rubio</option>
-  </select>
-
-  <select id="ropa">
-    <option value="azul">Camisa/Blusa azul</option>
-    <option value="verde">Camisa/Blusa verde</option>
-    <option value="rosa">Camisa/Blusa rosa</option>
-    <option value="gris">Camisa/Blusa gris</option>
-  </select>
-
-  <div class="emoji">🎒👩‍🎓👨‍🎓</div>
-
-  <hr style="margin:18px 0;">
   <h3>🏫 Salón (en vivo)</h3>
-  <div id="lista" class="live">Cargando salón...</div>
+  <div id="lista">Cargando salón...</div>
 
-  <button onclick="entrar()">Entrar a la Universidad</button>
-  <div class="hint">Cuando la Licda inicie el juego, aquí te enviará al aula de preguntas automáticamente.</div>
+  <button id="btnEntrar">Entrar a la Universidad</button>
+
+  <p style="font-size:0.85em; margin-top:10px">
+    Cuando la Licda inicie el juego, entrarás automáticamente 🎮
+  </p>
 </div>
 
+<!-- CONEXIÓN FIREBASE -->
 <script type="module">
-import { db, ref, set, onValue, serverTimestamp, onDisconnect, update } from "./firebase.js";
+  import { entrarAlSalon, escucharSalon } from "./firebase.js";
 
-let myId = null;
-let yaEntre = false;
+  const btn = document.getElementById("btnEntrar");
 
-function hearts(n){ return "❤️".repeat(Math.max(0, n ?? 0)); }
-
-function renderPlayers(lista) {
-  const cont = document.getElementById("lista");
-  if (!cont) return;
-
-  const players = lista ? Object.entries(lista).map(([id,p])=>({id,...p})) : [];
-  if (players.length === 0) {
-    cont.innerHTML = "Aún no hay estudiantes en el salón.";
-    return;
-  }
-
-  players.sort((a,b)=>(a.nombre||"").localeCompare(b.nombre||""));
-  cont.innerHTML = players.map(p => {
-    const h = hearts(p.vidas ?? 5);
-    const st = p.estado || "activo";
-    const extra = st !== "activo" ? ` — <b>${st}</b>` : "";
-    return `• <b>${p.nombre || "Sin nombre"}</b> ${h}${extra}`;
-  }).join("<br>");
-}
-
-window.entrar = async function () {
-  const nombre = document.getElementById("nombre").value.trim();
-  if (!nombre) { alert("Escribe tu nombre primero 😊"); return; }
-  if (yaEntre) { alert("Ya estás dentro 😊"); return; }
-
-  const transporte = document.getElementById("transporte").value;
-  const piel = document.getElementById("piel").value;
-  const pelo = document.getElementById("pelo").value;
-  const ropa = document.getElementById("ropa").value;
-
-  myId = "p_" + Date.now() + "_" + Math.floor(Math.random()*9999);
-
-  await set(ref(db, "room/jugadores/" + myId), {
-    nombre,
-    transporte,
-    piel,
-    pelo,
-    ropa,
-    vidas: 5,
-    estado: "activo",
-    creado: serverTimestamp()
-  });
-
-  // Si cierra pestaña: marcarlo como "salio"
-  onDisconnect(ref(db, "room/jugadores/" + myId)).update({ estado: "salio" });
-
-  yaEntre = true;
-  alert("🎮 ¡Listo! Ya estás en el salón con el resto del grupo.");
-};
-
-// Salón en vivo
-onValue(ref(db, "room/jugadores"), (snap) => renderPlayers(snap.val()));
-
-// Cuando la Licda inicie el juego, manda a game.html
-onValue(ref(db, "room/estado"), (snap) => {
-  const st = snap.val();
-  if (!st) return;
-
-  if (st.fase === "quiz") {
-    if (!yaEntre || !myId) {
-      alert("La Licda ya inició. Primero presiona: 'Entrar a la Universidad'.");
+  btn.addEventListener("click", () => {
+    const nombre = document.getElementById("nombre").value.trim();
+    if (!nombre) {
+      alert("Escribe tu nombre 😊");
       return;
     }
-    window.location.href = "game.html?id=" + encodeURIComponent(myId);
-  }
-});
-</script>
+    entrarAlSalon(nombre);
+  });
 
-</body>
-</html>
+  escucharSalon((personas) => {
+    const lista = document.getElementById("lista");
+    lista.innerHTML = "";
+
+    personas.forEach(p => {
+      const linea = document.createElement("div");
+      linea.textContent =
+        "• " + p.nombre +
+        (p.estado === "salió" ? " — salió" : " ❤️❤️
