@@ -4,90 +4,84 @@
   <meta charset="UTF-8" />
   <title>El Viaje Digital del Cliente</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-
   <style>
     body {
       margin: 0;
       font-family: "Segoe UI", sans-serif;
       background: linear-gradient(#b3d9ff, #e6f2ff);
       text-align: center;
+      min-height: 100vh;
     }
-
-    h1 {
-      margin-top: 30px;
-    }
-
-    p {
-      margin-top: 5px;
-    }
-
+    h1 { margin-top: 26px; }
     .card {
       background: white;
-      width: 90%;
-      max-width: 420px;
-      margin: 30px auto;
-      padding: 25px;
-      border-radius: 20px;
+      width: 92%;
+      max-width: 440px;
+      margin: 18px auto 30px;
+      padding: 22px;
+      border-radius: 22px;
       box-shadow: 0 10px 25px rgba(0,0,0,.15);
     }
-
-    h3 {
-      margin-bottom: 5px;
-    }
-
     select, input, button {
       width: 100%;
       margin-top: 12px;
-      padding: 10px;
-      border-radius: 10px;
-      border: 1px solid #ccc;
+      padding: 10px 12px;
+      border-radius: 12px;
+      border: 1px solid #cfcfcf;
       font-size: 1em;
+      box-sizing: border-box;
     }
-
     button {
       background: #004aad;
       color: white;
-      font-weight: bold;
+      font-weight: 800;
       cursor: pointer;
       border: none;
+      padding: 12px 14px;
+      border-radius: 14px;
+      margin-top: 14px;
+      box-shadow: 0 8px 18px rgba(0,74,173,.25);
     }
-
-    button:hover {
-      background: #00317a;
-    }
-
-    .emoji {
-      font-size: 2em;
-      margin-top: 12px;
-    }
-
-    hr {
-      margin: 18px 0;
-    }
-
+    button:hover { filter: brightness(.95); }
+    .emoji { font-size: 2em; margin: 10px 0 6px; }
+    .muted { color:#3b3b3b; font-size: .92em; margin-top: 8px; }
+    .hr { height:1px; background:#eee; margin:16px 0; }
     #lista {
-      text-align: left;
-      font-size: 0.95em;
-      line-height: 1.6;
-      background: #f7f7f7;
-      padding: 10px;
-      border-radius: 10px;
-      min-height: 40px;
+      text-align:left;
+      font-size:0.95em;
+      line-height:1.55;
+      background:#f7fbff;
+      border:1px solid #e8f1ff;
+      border-radius:14px;
+      padding:10px 12px;
+      min-height: 42px;
+    }
+    .pill {
+      display:inline-block;
+      padding:2px 10px;
+      border-radius:999px;
+      background:#eef6ff;
+      border:1px solid #d7ebff;
+      font-size:.86em;
+      margin-left:6px;
     }
   </style>
 </head>
 
 <body>
-
   <h1>🎓 El Viaje Digital del Cliente</h1>
   <p>Experiencia universitaria interactiva</p>
 
   <div class="card">
-
     <h3>👤 Tu nombre</h3>
     <input id="nombre" placeholder="Ej. Vivi, Ana, Carlos" />
 
-    <hr>
+    <div class="hr"></div>
+
+    <h3>🏫 Salón (en vivo)</h3>
+    <div id="lista">Cargando salón...</div>
+
+    <div class="hr"></div>
 
     <h3>🚍 ¿Cómo llegas a la U?</h3>
     <select id="transporte">
@@ -97,8 +91,7 @@
       <option value="pie">🚶 A pie</option>
     </select>
 
-    <h3>🎨 Personaliza tu personaje</h3>
-
+    <h3 style="margin-top:18px;">🎨 Personaliza tu personaje</h3>
     <select id="piel">
       <option value="clara">Piel clara</option>
       <option value="media">Piel media</option>
@@ -118,112 +111,83 @@
       <option value="gris">Camisa/Blusa gris</option>
     </select>
 
-    <div class="emoji">🎒👩‍🎓👨‍🎓</div>
+    <div class="emoji">🎒🧑‍🎓👩‍🎓</div>
 
-    <hr>
+    <button id="btnEntrar">Entrar a la Universidad</button>
+    <div class="muted">Cuando la Licda inicie el juego, aquí pasarán a la siguiente fase 🎮</div>
 
-    <h3>🏫 Salón (en vivo)</h3>
-    <div id="lista">Cargando salón…</div>
-
-    <hr>
-
-    <button onclick="entrar()">Entrar a la Universidad</button>
-
-    <p style="font-size:0.85em; margin-top:10px;">
-      Cuando la Licda inicie el juego, aquí pasarán a la siguiente fase 🎮
-    </p>
+    <div class="muted" style="margin-top:10px;">
+      Panel Host (solo tú): <span class="pill">/host.html</span>
+    </div>
   </div>
 
-  <!-- 🔥 SCRIPT FIREBASE (NO CAMBIAR EL type="module") -->
   <script type="module">
-    import { entrarAlSalon, escucharSalon } from "./firebase.js";
+    import {
+      ensureGameState,
+      joinLobby,
+      listenPlayers,
+      listenState,
+      getOrCreatePlayerId,
+      heartbeat,
+      playerSetStatus
+    } from "./firebase.js";
 
-    const listaDiv = document.getElementById("lista");
+    const lista = document.getElementById("lista");
+    const btnEntrar = document.getElementById("btnEntrar");
 
-    // Escuchar salón en tiempo real
-    escucharSalon((jugadores) => {
-      if (!jugadores || jugadores.length === 0) {
-        listaDiv.innerHTML = "Salón vacío…";
+    // 1) Asegura que exista estado base
+    ensureGameState();
+
+    // 2) Render del salón
+    listenPlayers((players) => {
+      if (!players.length) {
+        lista.textContent = "Aún no hay estudiantes en el salón.";
         return;
       }
-
-      jugadores.sort((a, b) => (b.updatedAt || 0) - (a.updatedAt || 0));
-
-      listaDiv.innerHTML = jugadores
-        .map(j => {
-          const corazones = "❤️".repeat(Math.max(1, j.vidas || 5));
-          const estado = j.estado === "salio" ? " — salió" : "";
-          return `• ${j.nombre} ${corazones}${estado}`;
-        })
-        .join("<br>");
+      lista.innerHTML = players.map(p => {
+        const hearts = "❤️".repeat(Math.max(0, Math.min(3, Number(p.lives ?? 3))));
+        const st = p.status === "salio" ? "— salió" :
+                   p.status === "out" ? "— fuera" :
+                   p.status === "finished" ? "— final" : "";
+        return `• ${escapeHtml(p.nombre || "sin nombre")} ${hearts} ${st}`;
+      }).join("<br>");
     });
 
-    // Función del botón
-    window.entrar = function () {
-      const nombre = document.getElementById("nombre").value.trim();
-      if (!nombre) {
-        alert("Escribe tu nombre primero 😊");
-        return;
+    // 3) Si la fase cambia a play => manda a juego
+    listenState((state) => {
+      const phase = state.phase || "lobby";
+      if (phase === "play") {
+        window.location.href = "./juego.html";
       }
+    });
+
+    // 4) Botón entrar (guardar en Firebase)
+    btnEntrar.addEventListener("click", async () => {
+      const nombre = document.getElementById("nombre").value.trim();
+      if (!nombre) return alert("Escribe tu nombre primero 😊");
 
       const transporte = document.getElementById("transporte").value;
       const piel = document.getElementById("piel").value;
       const pelo = document.getElementById("pelo").value;
       const ropa = document.getElementById("ropa").value;
 
-      entrarAlSalon({
-        nombre,
-        transporte,
-        piel,
-        pelo,
-        ropa,
-        vidas: 5
-      });
-localStorage.setItem("playerId", nombre.trim().toLowerCase().replace(/\s+/g, "_"));
-localStorage.setItem("playerName", nombre.trim());
+      await joinLobby({ nombre, transporte, piel, pelo, ropa });
+      alert("¡Listo! Ya estás en el salón en vivo ✅");
+    });
 
-      alert("¡Entraste al salón 🎓✨");
-    };
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/12.8.0/firebase-app.js";
-import { getDatabase, ref, onValue } from "https://www.gstatic.com/firebasejs/12.8.0/firebase-database.js";
+    // 5) Heartbeat (mantener “en línea”)
+    const pid = getOrCreatePlayerId();
+    setInterval(() => heartbeat(pid), 15000);
 
-// MISMA CONFIG
-const firebaseConfig = {
-  apiKey: "AIzaSyD5Rx36FYLIi3nw09exLZrg3yU241DQ5gI",
-  authDomain: "u07059.firebaseapp.com",
-  databaseURL: "https://u07059-default-rtdb.firebaseio.com",
-  projectId: "u07059",
-  storageBucket: "u07059.firebasestorage.app",
-  messagingSenderId: "155102720783",
-  appId: "1:155102720783:web:30d81bcf84398d4316047a"
-};
+    // si abren index, marcamos lobby
+    playerSetStatus(pid, "lobby").catch(()=>{});
 
-const app = initializeApp(firebaseConfig);
-const db = getDatabase(app);
-
-// Escuchar control del host
-const controlRef = ref(db, "control");
-
-onValue(controlRef, (snap) => {
-  const c = snap.val() || { estado: "lobby", ambiente: "dia" };
-
-  // 1) Cambiar fondo por ambiente
-  if (c.ambiente === "dia") {
-    document.body.style.background = "linear-gradient(#b3d9ff, #e6f2ff)";
-  } else if (c.ambiente === "tarde") {
-    document.body.style.background = "linear-gradient(#ffddb3, #fff3e6)";
-  } else if (c.ambiente === "noche") {
-    document.body.style.background = "linear-gradient(#0b1b3a, #1a2a52)";
-    document.body.style.color = "white";
-  }
-
-  // 2) Si host cambia a nivel1, mandamos a todos a juego.html
-  if (c.estado === "nivel1") {
-    window.location.href = "./juego.html";
-  }
-});
-
+    function escapeHtml(str){
+      return String(str).replace(/[&<>"']/g, (m) =>
+        ({ "&":"&amp;", "<":"&lt;", ">":"&gt;", '"':"&quot;", "'":"&#039;" }[m])
+      );
+    }
   </script>
-
 </body>
 </html>
+
