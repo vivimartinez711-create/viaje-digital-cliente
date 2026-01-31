@@ -2,461 +2,91 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8" />
-  <title>Juego — El Viaje Digital del Cliente</title>
+  <title>Fase 2 — Aula | El Viaje Digital del Cliente</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <style>
-    body{margin:0;font-family:Segoe UI,sans-serif;background:linear-gradient(#b3d9ff,#e6f2ff);color:#0b1220}
-    header{padding:14px 16px;display:flex;gap:10px;align-items:center;justify-content:space-between}
-    .brand{font-weight:900}
-    .pill{display:inline-block;padding:6px 10px;border-radius:999px;background:rgba(0,0,0,.06);margin-left:6px}
-    .wrap{max-width:1150px;margin:0 auto;padding:0 16px 18px}
-    .grid{display:grid;grid-template-columns:360px 1fr;gap:12px}
-    @media (max-width:1000px){.grid{grid-template-columns:1fr}}
-    .card{background:#fff;border-radius:18px;box-shadow:0 10px 25px rgba(0,0,0,.12);padding:14px}
-    .muted{opacity:.75}
-    .btn{width:100%;padding:12px;border:none;border-radius:12px;background:#004aad;color:#fff;font-weight:900;cursor:pointer}
-    .btn:hover{filter:brightness(1.03)}
-    .opt{display:block;width:100%;text-align:left;padding:12px;border-radius:12px;border:1px solid rgba(0,0,0,.12);background:#f7f8ff;margin-top:10px;cursor:pointer;font-weight:700}
-    .opt:hover{background:#eef1ff}
-    .opt[disabled]{opacity:.55;cursor:not-allowed}
-    .row{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
-    .hearts{font-size:18px}
-    .stage{border-radius:18px;min-height:360px;display:flex;flex-direction:column;gap:10px}
-    .classroom{flex:1;border-radius:18px;background:linear-gradient(135deg, rgba(0,74,173,.08), rgba(0,0,0,.03));padding:12px}
-    .avatars{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
-    @media (max-width:700px){.avatars{grid-template-columns:repeat(2,1fr)}}
-    .av{background:rgba(255,255,255,.9);border:1px solid rgba(0,0,0,.08);border-radius:14px;padding:10px;text-align:center}
-    .name{font-weight:900;font-size:13px}
-    .small{font-size:12px;opacity:.8}
-    .svgWrap{display:flex;justify-content:center;margin:6px 0}
-    .timer{font-weight:900}
-    /* Overlays */
-    .overlay{position:fixed;inset:0;background:rgba(0,0,0,.72);display:none;align-items:center;justify-content:center;padding:18px;z-index:50}
-    .modal{max-width:760px;width:100%;background:#fff;border-radius:22px;padding:18px;box-shadow:0 12px 40px rgba(0,0,0,.35);text-align:center}
-    .big{font-size:22px;font-weight:1000}
-    .confetti{position:fixed;inset:0;pointer-events:none;z-index:80;display:none}
-    .badge{display:inline-block;padding:6px 10px;border-radius:999px;background:#f3f6ff;border:1px solid rgba(0,0,0,.08);margin:6px}
+    body{
+      margin:0;
+      font-family:"Segoe UI", sans-serif;
+      background: linear-gradient(#0b1220, #111a2e);
+      color:#fff;
+      text-align:center;
+      min-height:100vh;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      padding:16px;
+      box-sizing:border-box;
+    }
+    .card{
+      width:92%;
+      max-width:560px;
+      background: rgba(255,255,255,.06);
+      border: 1px solid rgba(255,255,255,.12);
+      border-radius: 22px;
+      padding: 18px;
+      box-shadow: 0 14px 35px rgba(0,0,0,.45);
+    }
+    h1{margin:6px 0 10px;}
+    .muted{opacity:.85}
+    button{
+      width:100%;
+      margin-top:12px;
+      padding:12px 14px;
+      border-radius:14px;
+      border:none;
+      background:#2f6bff;
+      color:#fff;
+      font-weight:900;
+      cursor:pointer;
+      box-shadow: 0 10px 22px rgba(47,107,255,.25);
+    }
+    button:hover{filter:brightness(.95);}
+    .pill{display:inline-block;padding:3px 10px;border-radius:999px;background:rgba(255,255,255,.10);border:1px solid rgba(255,255,255,.14);}
   </style>
 </head>
 <body>
-  <header>
-    <div class="brand">🎓 El Viaje Digital del Cliente</div>
-    <div>
-      <span class="pill">Estado: <b id="estado">—</b></span>
-      <span class="pill">Ambiente: <b id="ambiente">—</b></span>
-      <span class="pill timer">⏱ <span id="tLeft">—</span></span>
+
+  <div class="card">
+    <h1>📚 Fase 2 — Aula</h1>
+    <div class="muted">
+      Si la Licda no ha iniciado, te regresa al Lobby automáticamente.
     </div>
-  </header>
 
-  <div class="wrap">
-    <div class="grid">
-      <!-- Panel jugador -->
-      <div class="card">
-        <h3 style="margin:0 0 6px">👤 Tu jugador</h3>
-        <div class="muted" id="who">Cargando…</div>
-        <div style="margin-top:10px" class="row">
-          <div class="hearts" id="hearts">❤️❤️❤️❤️❤️</div>
-          <div class="pill">Score: <b id="score">0</b></div>
-        </div>
-
-        <hr style="margin:14px 0;opacity:.25">
-
-        <h3 style="margin:0 0 6px">❓ Pregunta</h3>
-        <div id="qText" class="big">Esperando a la Host…</div>
-        <div class="muted" id="qMeta">Cuando la Host lance la pregunta, podrás responder.</div>
-
-        <button class="opt" id="a0" disabled></button>
-        <button class="opt" id="a1" disabled></button>
-        <button class="opt" id="a2" disabled></button>
-        <button class="opt" id="a3" disabled></button>
-
-        <div class="muted" style="margin-top:10px">
-          *Incorrecto o sin responder: -2 corazones.
-        </div>
-      </div>
-
-      <!-- Salón -->
-      <div class="card stage">
-        <div class="classroom">
-          <div class="row" style="justify-content:space-between">
-            <div class="big" id="roomTitle">🏫 Salón</div>
-            <div class="muted">Todos se ven en vivo aquí</div>
-          </div>
-          <div style="margin-top:10px" class="avatars" id="avatars"></div>
-        </div>
-
-        <div class="classroom" id="hintBox">
-          <div class="big">📌 Tip</div>
-          <div class="muted">Responde rápido y correcto para llegar al podio.</div>
-        </div>
-      </div>
+    <div style="margin-top:14px;">
+      Estado: <span class="pill" id="st">Cargando...</span>
     </div>
+
+    <p class="muted" style="margin-top:14px;">
+      (Demo) Aquí van tus preguntas por niveles, vidas, expulsión y final.
+      Ya está conectada la fase: cuando Host ponga <b>PLAY</b> entras; si vuelve a <b>LOBBY</b> regresas.
+    </p>
+
+    <button onclick="window.location.href='./index.html'">Volver al Lobby</button>
   </div>
-
-  <!-- Eliminación -->
-  <div class="overlay" id="outOverlay">
-    <div class="modal">
-      <div class="big">🚪 Saliste del juego</div>
-      <p style="margin:10px 0 0">
-        <b>Rector (formal):</b> “Sigue estudiando, suerte para el siguiente curso.”
-      </p>
-      <p style="margin:10px 0 0">
-        <b>Licda:</b> “En la próxima lo lograrás. No te desanimes.” 🐶🐶🐶🐶🐶
-      </p>
-      <div class="badge">Pausa para que todos vean quién salió</div>
-      <div style="margin-top:14px" class="muted">Puedes quedarte mirando el salón en vivo.</div>
-      <button class="btn" style="margin-top:14px" onclick="document.getElementById('outOverlay').style.display='none'">Entendido</button>
-    </div>
-  </div>
-
-  <!-- Final -->
-  <div class="overlay" id="finalOverlay">
-    <div class="modal">
-      <div class="big">🏆 Podio final</div>
-      <div id="podio" style="margin-top:12px"></div>
-      <p style="margin:10px 0 0">
-        <b>Licda (tú):</b> “¡Felicidades! Excelente esfuerzo.” 🐶✨
-      </p>
-      <button class="btn" style="margin-top:14px" onclick="document.getElementById('finalOverlay').style.display='none'">Cerrar</button>
-    </div>
-  </div>
-
-  <canvas class="confetti" id="confetti"></canvas>
 
   <script type="module">
-    import { escucharSalon, escucharControl, submitAnswer, getPlayer } from "./firebase.js";
+    import { listenState, getOrCreatePlayerId, playerSetStatus, heartbeat } from "./firebase.js";
 
-    // ===== Preguntas (las tuyas) =====
-    const QUESTIONS = [
-      // Nivel 1
-      { level:"nivel1", q:"¿Qué es la experiencia del cliente?", a:["El precio que paga el cliente","La publicidad de la empresa","La percepción total del cliente en todas sus interacciones","Solo el servicio postventa"], c:2 },
-      { level:"nivel1", q:"¿En qué momento se construye la experiencia del cliente?", a:["Solo cuando compra","Solo cuando hay un problema","Antes, durante y después de la compra","Al final del proceso"], c:2 },
-      { level:"nivel1", q:"¿Cuál es el principal rol de los medios digitales en la experiencia del cliente?", a:["Reemplazar a las personas","Aumentar publicidad","Facilitar la interacción y el servicio al cliente","Reducir costos únicamente"], c:2 },
-      { level:"nivel1", q:"La tecnología en la experiencia del cliente debe verse como:", a:["Un fin en sí mismo","Un gasto innecesario","Un habilitador de la experiencia","Un reemplazo total de la atención humana"], c:2 },
+    const st = document.getElementById("st");
+    const pid = getOrCreatePlayerId();
 
-      // Nivel 2
-      { level:"nivel2", q:"¿Cuál es el objetivo principal de una estrategia digital centrada en el cliente?", a:["Usar más plataformas","Reducir fricciones y generar valor","Automatizar todo","Tener presencia en redes sociales"], c:1 },
-      { level:"nivel2", q:"¿Qué característica es clave para una buena estrategia digital?", a:["Que cada canal funcione separado","Que solo exista un canal","Integración coherente entre canales","Uso exclusivo de tecnología"], c:2 },
-      { level:"nivel2", q:"¿Qué acción ayuda a mejorar la experiencia digital del cliente?", a:["No escuchar al cliente","Conocer sus necesidades y expectativas","Copiar a la competencia","Cambiar el logo"], c:1 },
-      { level:"nivel2", q:"¿Por qué es importante mantener un enfoque humano en lo digital?", a:["Porque la tecnología es limitada","Porque reduce costos","Porque detrás de cada interacción hay una persona","Porque lo digital no funciona solo"], c:2 },
+    setInterval(() => heartbeat(pid), 15000);
 
-      // Nivel 3
-      { level:"nivel3", q:"¿Qué hace bien Amazon en su experiencia digital?", a:["Procesos complicados","Falta de atención postventa","Plataforma ágil y personalizada","Uso limitado de tecnología"], c:2 },
-      { level:"nivel3", q:"¿Por qué Amazon es considerado un caso exitoso de experiencia del cliente?", a:["Por su publicidad","Por ofrecer precios bajos únicamente","Por facilitar todo el recorrido del cliente","Por eliminar la atención humana"], c:2 },
-      { level:"nivel3", q:"¿Qué aspecto destaca en el ejemplo de Cemaco en Guatemala?", a:["Venta solo presencial","Falta de información digital","Uso de comercio electrónico para facilitar la compra","Procesos confusos para el cliente"], c:2 },
-      { level:"nivel3", q:"¿Qué demuestra el caso de Cemaco respecto a los medios digitales?", a:["Que no son necesarios","Que mejoran la experiencia cuando se usan correctamente","Que solo sirven para grandes empresas","Que reemplazan al servicio físico"], c:1 },
-      { level:"nivel3", q:"¿Qué problema mostró LATAM en su experiencia digital durante la pandemia?", a:["Exceso de tiendas físicas","Digitalización sin estrategia centrada en el cliente","Falta de redes sociales","Poca publicidad"], c:1 },
-      { level:"nivel3", q:"¿Cuál fue un error clave en el caso LATAM desde la experiencia del cliente?", a:["Uso de tecnología avanzada","Atención clara y empática","Automatización excesiva sin enfoque humano","Integración correcta de canales"], c:2 },
+    listenState((state) => {
+      const phase = state.phase || "lobby";
+      st.textContent = phase.toUpperCase();
 
-      // Final
-      { level:"final", q:"¿Cuál es la conclusión más correcta sobre los medios digitales y la experiencia del cliente?", a:["La tecnología lo resuelve todo","La experiencia depende solo del cliente","La experiencia depende de una estrategia digital bien gestionada y centrada en las personas","Lo digital elimina la necesidad de atención humana"], c:2 },
-    ];
-
-    // ===== Helpers =====
-    const $ = (id)=>document.getElementById(id);
-
-    function hearts(n){
-      const x = Math.max(0, Math.min(5, Number(n ?? 5)));
-      return "❤️".repeat(x) + "🤍".repeat(5-x);
-    }
-
-    function applyAmbiente(a){
-      const b = document.body;
-      b.style.color = "#0b1220";
-      if (a==="dia") b.style.background = "linear-gradient(#b3d9ff,#e6f2ff)";
-      if (a==="tarde") b.style.background = "linear-gradient(#ffddb3,#fff3e6)";
-      if (a==="noche"){ b.style.background="linear-gradient(#0b1b3a,#1a2a52)"; b.style.color="#e9eefc"; }
-    }
-
-    function levelTitle(s){
-      if (s==="nivel1") return "🏫 Salón — Nivel 1 (Calentamiento)";
-      if (s==="nivel2") return "🏫 Salón — Nivel 2 (Estrategia)";
-      if (s==="nivel3") return "🏫 Salón — Nivel 3 (Casos)";
-      if (s==="final") return "🏆 Aula Final (Jefe Final)";
-      return "🏫 Salón";
-    }
-
-    // ===== Avatar (simple SVG estilo muñeco) =====
-    const COLOR = {
-      azul:"#2f6bff", verde:"#18b67a", rosa:"#ff6fb1", gris:"#6b7280",
-      clara:"#f4d7c3", media:"#d8b08c", oscura:"#8d5a3b",
-      negro:"#1f2937", "castaño":"#6b3f2a", rubio:"#e9d27d"
-    };
-
-    function guessGender(name){
-      const n = (name||"").toLowerCase().trim();
-      const femaleList = ["ana","maria","vivi","vivian","andrea","karla","paola","diana","sofia","valeria","gabriela","lucia","jessica","monica","lourdes"];
-      if (femaleList.includes(n)) return "f";
-      if (n.endsWith("a")) return "f";
-      return "m";
-    }
-
-    function avatarSVG(p){
-      const skin = COLOR[p.piel] || COLOR.media;
-      const hair = COLOR[p.pelo] || COLOR.negro;
-      const top = COLOR[p.ropa] || COLOR.azul;
-      const g = (p.genero && p.genero !== "auto") ? (p.genero==="mujer"?"f":"m") : guessGender(p.nombre);
-
-      // Hombre: jeans + camisa. Mujer: pantalón + blusa (manga 3/4).
-      const bottom = "#1f4d9a"; // jeans
-      const blouse = g==="f" ? top : top;
-
-      return `
-      <svg width="92" height="92" viewBox="0 0 92 92" aria-hidden="true">
-        <rect x="0" y="0" width="92" height="92" rx="16" fill="rgba(0,0,0,.03)"/>
-        <!-- hair -->
-        <circle cx="46" cy="26" r="16" fill="${hair}"/>
-        <!-- head -->
-        <circle cx="46" cy="30" r="14" fill="${skin}"/>
-        <!-- body -->
-        ${g==="f"
-          ? `<rect x="30" y="44" width="32" height="20" rx="8" fill="${blouse}"/>
-             <rect x="28" y="50" width="10" height="12" rx="5" fill="${blouse}" opacity=".95"/>
-             <rect x="54" y="50" width="10" height="12" rx="5" fill="${blouse}" opacity=".95"/>`
-          : `<rect x="30" y="44" width="32" height="22" rx="8" fill="${top}"/>`
-        }
-        <!-- pants -->
-        <rect x="32" y="66" width="12" height="18" rx="6" fill="${bottom}"/>
-        <rect x="48" y="66" width="12" height="18" rx="6" fill="${bottom}"/>
-        <!-- shoes -->
-        <rect x="30" y="82" width="16" height="6" rx="3" fill="#111827"/>
-        <rect x="46" y="82" width="16" height="6" rx="3" fill="#111827"/>
-      </svg>`;
-    }
-
-    // ===== Estado local =====
-    const playerId = localStorage.getItem("playerId");
-    const playerName = localStorage.getItem("playerName");
-
-    // Si entraron directo sin lobby:
-    if (!playerId) {
-      alert("Primero entra desde el Lobby (index) para registrarte en el salón.");
-      window.location.href = "./index.html";
-    }
-
-    $("who").textContent = playerName ? `Jugador: ${playerName}` : `Jugador: ${playerId}`;
-
-    // ===== Render salón =====
-    escucharSalon((jugadores) => {
-      const box = $("avatars");
-      box.innerHTML = "";
-
-      jugadores
-        .slice()
-        .sort((a,b)=> (b.score||0)-(a.score||0))
-        .slice(0, 40)
-        .forEach(p => {
-          const div = document.createElement("div");
-          div.className = "av";
-
-          const h = hearts(p.vidas ?? 5);
-          const status = (p.vidas<=0 || p.estado==="eliminado") ? "🚪" : "🎓";
-
-          div.innerHTML = `
-            <div class="name">${status} ${p.nombre || "Anon"}</div>
-            <div class="svgWrap">${avatarSVG(p)}</div>
-            <div class="small">${h} · ${p.score ?? 0} pts</div>
-          `;
-          box.appendChild(div);
-        });
-
-      // Mi panel
-      const me = jugadores.find(x => x && x.id === playerId);
-      if (me) {
-        $("hearts").textContent = hearts(me.vidas ?? 5);
-        $("score").textContent = me.score ?? 0;
-
-        if ((me.vidas ?? 5) <= 0 || me.estado === "eliminado") {
-          $("outOverlay").style.display = "flex";
-          disableAnswers();
-        }
-      }
-    });
-
-    // ===== Preguntas sincronizadas por Host =====
-    let control = {};
-    let currentQ = null;
-    let answeredForQid = "";
-
-    function disableAnswers(){
-      ["a0","a1","a2","a3"].forEach(id=>{ $(id).disabled = true; $(id).textContent=""; });
-    }
-
-    function loadQuestion(qIndex, estadoJuego){
-      // Filtrar por nivel actual (pero qIndex es global para toda la lista)
-      const q = QUESTIONS[qIndex] || null;
-      currentQ = q;
-
-      if (!q) {
-        $("qText").textContent = "No hay más preguntas. Espera a la Host…";
-        $("qMeta").textContent = "";
-        disableAnswers();
-        return;
-      }
-
-      // Solo permitir si el estado corresponde al level de la pregunta
-      // (si la host cambia de nivel, la lista sigue pero está alineada)
-      $("qText").textContent = q.q;
-      $("qMeta").textContent = `Nivel: ${q.level.toUpperCase()} · Marca una opción`;
-
-      ["a0","a1","a2","a3"].forEach((id,i)=>{
-        const btn = $(id);
-        btn.textContent = `${"ABCD"[i]}) ${q.a[i]}`;
-        btn.disabled = false;
-        btn.onclick = () => answer(i);
-      });
-    }
-
-    async function answer(i){
-      if (!currentQ) return;
-      const qid = `q${control.qIndex ?? 0}`;
-
-      // Evitar doble
-      if (answeredForQid === qid) return;
-      answeredForQid = qid;
-
-      // Lock UI
-      ["a0","a1","a2","a3"].forEach(id=> $(id).disabled = true );
-
-      const correct = (i === currentQ.c);
-
-      // Puntos simples: 100 + bonus por tiempo si respondió antes
-      const now = Date.now();
-      const tBonus = control.deadline ? Math.max(0, Math.floor((control.deadline - now)/250)) : 0; // 0..100 aprox
-      const points = correct ? (100 + Math.min(100,tBonus)) : 0;
-
-      await submitAnswer({
-        playerId,
-        qid,
-        selected: i,
-        correct,
-        points
-      });
-
-      if (!correct) {
-        $("qMeta").textContent = "❌ Incorrecto: -2 corazones.";
-      } else {
-        $("qMeta").textContent = `✅ Correcto: +${points} pts.`;
-      }
-    }
-
-    function updateTimer(){
-      const dl = Number(control.deadline || 0);
-      if (!dl || !control.qOpen) { $("tLeft").textContent = "—"; return; }
-      const left = Math.max(0, dl - Date.now());
-      $("tLeft").textContent = `${Math.ceil(left/1000)}s`;
-      if (left === 0) {
-        // si no respondió, cuenta como fallo (una vez)
-        const qid = `q${control.qIndex ?? 0}`;
-        if (answeredForQid !== qid && currentQ) {
-          answeredForQid = qid;
-          disableAnswers();
-          submitAnswer({ playerId, qid, selected: "", correct: false, points: 0 });
-          $("qMeta").textContent = "⏱️ Tiempo agotado: -2 corazones.";
-        }
-      }
-    }
-    setInterval(updateTimer, 250);
-
-    // Control en vivo del Host
-    escucharControl((c) => {
-      control = c || {};
-      $("estado").textContent = control.estado || "lobby";
-      $("ambiente").textContent = control.ambiente || "dia";
-      applyAmbiente(control.ambiente || "dia");
-
-      $("roomTitle").textContent = levelTitle(control.estado || "lobby");
-
-      // redirecciones por estado
-      if ((control.estado || "lobby") === "lobby") {
-        // si host regresa a lobby, volver
+      if (phase !== "play") {
+        // Si no está en play, vuelve al lobby
         window.location.href = "./index.html";
-        return;
-      }
-
-      // final: mostrar podio
-      if ((control.estado || "") === "final") {
-        showFinal();
-      }
-
-      // Pregunta activa
-      if (control.qOpen) {
-        answeredForQid = ""; // permite responder a la nueva pregunta
-        loadQuestion(Number(control.qIndex || 0), control.estado || "nivel1");
+      } else {
+        // Marcamos que está jugando
+        playerSetStatus(pid, "playing").catch(()=>{});
       }
     });
-
-    // ===== Final / Podio =====
-    async function showFinal(){
-      // Obtiene snapshot del salón actual renderizado por escucharSalon: ya lo veremos,
-      // pero para podio calculamos leyendo el DOM no; mejor pedir el player data rápido:
-      // (simple: volver a usar escucharSalon ya nos da ranking. Aquí hacemos podio con top3 del último render)
-      // Para que sea estable, hacemos una lectura directa:
-      // (usamos getPlayer para mi y nos quedamos con el ranking que ya se pinta)
-      // Más simple: mostrar podio según lo que ya tiene la tabla (avatars está ordenado).
-      const list = Array.from(document.querySelectorAll("#avatars .av .name"))
-        .map(x => x.textContent.replace("🎓 ","").replace("🚪 ","").trim());
-
-      // Como fallback si no hay:
-      const names = list.slice(0,3);
-
-      const pod = $("podio");
-      pod.innerHTML = `
-        <div class="badge">🥇 1er lugar: <b>${names[0] || "—"}</b> (medalla 🏅)</div><br>
-        <div class="badge">🥈 2do lugar: <b>${names[1] || "—"}</b></div><br>
-        <div class="badge">🥉 3er lugar: <b>${names[2] || "—"}</b></div><br>
-        <div class="badge">🎊 Confeti para 1–2–3</div>
-      `;
-
-      $("finalOverlay").style.display = "flex";
-      startConfetti();
-    }
-
-    // Confetti simple (canvas)
-    const canvas = $("confetti");
-    const ctx = canvas.getContext("2d");
-    let confettiOn = false, parts = [];
-
-    function resize(){
-      canvas.width = window.innerWidth;
-      canvas.height = window.innerHeight;
-    }
-    window.addEventListener("resize", resize);
-    resize();
-
-    function startConfetti(){
-      if (confettiOn) return;
-      confettiOn = true;
-      canvas.style.display = "block";
-      parts = Array.from({length: 140}, () => ({
-        x: Math.random()*canvas.width,
-        y: -20 - Math.random()*canvas.height,
-        r: 3 + Math.random()*5,
-        vx: -1 + Math.random()*2,
-        vy: 2 + Math.random()*4,
-        rot: Math.random()*Math.PI
-      }));
-      tick();
-      setTimeout(()=>{ confettiOn=false; canvas.style.display="none"; }, 4500);
-    }
-
-    function tick(){
-      if (!confettiOn) return;
-      ctx.clearRect(0,0,canvas.width,canvas.height);
-      for (const p of parts){
-        p.x += p.vx;
-        p.y += p.vy;
-        p.rot += 0.07;
-        ctx.save();
-        ctx.translate(p.x,p.y);
-        ctx.rotate(p.rot);
-        ctx.fillStyle = `hsl(${Math.floor(Math.random()*360)},90%,55%)`;
-        ctx.fillRect(-p.r, -p.r, p.r*2, p.r*2);
-        ctx.restore();
-        if (p.y > canvas.height+30){ p.y = -20; p.x = Math.random()*canvas.width; }
-      }
-      requestAnimationFrame(tick);
-    }
   </script>
+
 </body>
 </html>
+
