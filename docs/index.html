@@ -2,53 +2,42 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <title>Viaje Digital del Cliente</title>
+    <title>Juego</title>
     <style>
         body {
-            background: linear-gradient(135deg, #1d2671, #c33764);
+            background: #111;
             color: white;
             font-family: Arial, sans-serif;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            height: 100vh;
-            margin: 0;
-        }
-        .card {
-            background: rgba(0,0,0,0.6);
-            padding: 30px;
-            border-radius: 12px;
             text-align: center;
-            width: 300px;
+            padding-top: 100px;
         }
         button {
-            padding: 12px 20px;
-            border: none;
+            padding: 10px 20px;
             border-radius: 8px;
-            background: #00e5ff;
+            border: none;
+            background: #ff4081;
+            color: white;
             font-size: 16px;
             cursor: pointer;
-            margin-top: 15px;
-        }
-        button:hover {
-            background: #1de9b6;
         }
     </style>
 </head>
 <body>
 
-<div class="card">
-    <h1>🎮 Viaje Digital del Cliente</h1>
-    <p>Marketing Gerencial II</p>
-    <p>3 vidas · 3 niveles · Jefa final 👩‍🏫🔥</p>
-    <button onclick="iniciar()">Iniciar juego</button>
-</div>
+<h1>🚀 Nivel 1</h1>
+<p>Pregunta de prueba</p>
+
+<button onclick="alert('Correcto 🎉')">Responder</button>
+
+<br><br>
+<button onclick="volver()">⬅ Volver al inicio</button>
 
 <script>
-function iniciar() {
-    window.location.href = "game.html";
+function volver() {
+    window.location.href = "index.html";
 }
 </script>
 
 </body>
 </html>
+
