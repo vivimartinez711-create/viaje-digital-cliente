@@ -1,44 +1,54 @@
-<script type="module">
-  import { entrarAlSalon, escucharSalon } from "./firebase.js";
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Viaje Digital del Cliente</title>
+    <style>
+        body {
+            background: linear-gradient(135deg, #1d2671, #c33764);
+            color: white;
+            font-family: Arial, sans-serif;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            margin: 0;
+        }
+        .card {
+            background: rgba(0,0,0,0.6);
+            padding: 30px;
+            border-radius: 12px;
+            text-align: center;
+            width: 300px;
+        }
+        button {
+            padding: 12px 20px;
+            border: none;
+            border-radius: 8px;
+            background: #00e5ff;
+            font-size: 16px;
+            cursor: pointer;
+            margin-top: 15px;
+        }
+        button:hover {
+            background: #1de9b6;
+        }
+    </style>
+</head>
+<body>
 
-  const listaDiv = document.getElementById("lista");
-  const btn = document.querySelector("button[onclick='entrar()']");
+<div class="card">
+    <h1>🎮 Viaje Digital del Cliente</h1>
+    <p>Marketing Gerencial II</p>
+    <p>3 vidas · 3 niveles · Jefa final 👩‍🏫🔥</p>
+    <button onclick="iniciar()">Iniciar juego</button>
+</div>
 
-  // Pintar salón
-  escucharSalon((jugadores) => {
-    if (!listaDiv) return;
-
-    if (!jugadores.length) {
-      listaDiv.innerHTML = "Aún no hay estudiantes en el salón…";
-      return;
-    }
-
-    jugadores.sort((a,b) => (b.updatedAt||0) - (a.updatedAt||0));
-
-    listaDiv.innerHTML = jugadores
-      .slice(0, 50)
-      .map(j => {
-        const hearts = "❤️".repeat(Math.max(0, Math.min(10, Number(j.vidas ?? 5))));
-        const estado = j.estado === "salio" ? " — salió" : "";
-        return `• ${j.nombre || "Anon"} ${hearts}${estado}`;
-      })
-      .join("<br>");
-  });
-
-  // Tu función entrar() (la conectamos a Firebase)
-  window.entrar = function () {
-    const nombre = document.getElementById("nombre")?.value?.trim();
-    if (!nombre) return alert("Escribe tu nombre primero 😊");
-
-    const transporte = document.getElementById("transporte")?.value || "bus";
-    const piel = document.getElementById("piel")?.value || "media";
-    const pelo = document.getElementById("pelo")?.value || "negro";
-    const ropa = document.getElementById("ropa")?.value || "azul";
-
-    entrarAlSalon({ nombre, transporte, piel, pelo, ropa, vidas: 5 });
-
-    alert("¡Listo! Entraste al salón 🎓✅\nAhora todos te verán en vivo.");
-    if (btn) btn.disabled = true;
-  };
+<script>
+function iniciar() {
+    window.location.href = "game.html";
+}
 </script>
 
+</body>
+</html>
