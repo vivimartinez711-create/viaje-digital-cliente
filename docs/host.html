@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <title>Panel Licda (Host) — Viaje Digital del Cliente</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <style>
+    body{margin:0;font-family:Segoe UI,sans-serif;background:#0b1220;color:#e9eefc}
+    .wrap{max-width:980px;margin:0 auto;padding:18px}
+    .card{background:#121c33;border:1px solid rgba(255,255,255,.08);border-radius:18px;padding:16px;margin:14px 0;box-shadow:0 10px 30px rgba(0,0,0,.25)}
+    h1{margin:8px 0 4px}
+    .muted{opacity:.75}
+    input,select,button{padding:10px;border-radius:12px;border:1px solid rgba(255,255,255,.16);background:#0f1830;color:#fff;font-size:14px}
+    button{cursor:pointer;border:none;background:#2f6bff;font-weight:700}
+    button:hover{filter:brightness(1.05)}
+    .row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+    .row > *{flex:1}
+    .pill{display:inline-block;padding:6px 10px;border-radius:999px;background:rgba(255,255,255,.08);margin-right:6px}
+    table{width:100%;border-collapse:collapse;margin-top:8px}
+    th,td{padding:10px;border-bottom:1px solid rgba(255,255,255,.08);text-align:left;font-size:14px}
+    th{opacity:.8}
+    .ok{color:#74ffb4}
+    .warn{color:#ffd479}
+    .bad{color:#ff7a7a}
+    .right{text-align:right}
+  </style>
+</head>
+
+<body>
+  <div class="wrap">
+    <h1>👩‍🏫 Panel Licda (Host)</h1>
+    <div class="muted">Control en vivo — El Viaje Digital del Cliente</div>
+
+    <!-- Bloque de acceso -->
+    <div class="card" id="loginCard">
+      <h3>🔐 Acceso</h3>
+      <div class="row">
+        <input id="pin" placeholder="PIN del host (ej. 2026)" />
+        <button id="btnEntrarHost">Entrar</button>
+      </div>
+      <div class="muted" style="margin-top:8px">
+        *Este PIN solo es una barrera básica para que los alumnos no entren por accidente.
+      </div>
+    </div>
+
+    <!-- Panel -->
+    <div class="card" id="panelCard" style="display:none;">
+      <h3>🎛️ Controles</h3>
+      <div class="row">
+        <select id="estadoJuego">
+          <option value="lobby">Lobby (esperando)</option>
+          <option value="nivel1">Nivel 1</option>
+          <option value="nivel2">Nivel 2</option>
+          <option value="nivel3">Nivel 3</option>
+          <option value="final">Final (podio)</option>
+        </select>
+
+        <select id="ambiente">
+          <option value="dia">🌞 Día</option>
+          <option value="tarde">🌇 Tarde</option>
+          <option value="noche">🌙 Noche</option>
+        </select>
+
+        <button id="btnAplicar">Aplicar cambios</button>
+      </div>
+
+      <div style="margin-top:10px">
+        <span class="pill">👥 En salón: <b id="count">0</b></span>
+        <span class="pill">Estado: <b id="estadoTxt">lobby</b></span>
+        <span class="pill">Ambiente: <b id="ambienteTxt">dia</b></span>
+      </div>
+    </div>
+
+    <!-- Lista de jugadores -->
+    <div class="card" id="playersCard" style="display:none;">
+      <h3>🏫 Estudiantes en vivo</h3>
+      <table>
+        <thead>
+          <tr>
+            <th>Nombre</th>
+            <th>Transporte</th>
+            <th>Look</th>
+            <th>Vidas</th>
+            <th>Estado</th>
+          </tr>
+        </thead>
+        <tbody id="tbody"></tbody>
+      </table>
+      <div class="muted" style="margin-top:8px">
+        *Si ves duplicados, se arregla con la presencia (lo hacemos después al 100%).
+      </div>
+    </div>
+  </div>
+
+  <script type="module">
+    import { escucharSalon } from "./firebase.js";
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/12.8.0/firebase-app.js";
+    import { getDatabase, ref, set, onValue } from "https://www.gstatic.com/firebasejs/12.8.0/firebase-database.js";
+
+    // Misma config del proyecto
+    const firebaseConfig = {
+      apiKey: "AIzaSyD5Rx36FYLIi3nw09exLZrg3yU241DQ5gI",
+      authDomain: "u07059.firebaseapp.com",
+      databaseURL: "https://u07059-default-rtdb.firebaseio.com",
+      projectId: "u07059",
+      storageBucket: "u07059.firebasestorage.app",
+      messagingSenderId: "155102720783",
+      appId: "1:155102720783:web:30d81bcf84398d4316047a"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getDatabase(app);
+
+    // refs
+    const controlRef = ref(db, "control");
+
+    // UI
+    const loginCard = document.getElementById("loginCard");
+    const panelCard = document.getElementById("panelCard");
+    const playersCard = document.getElementById("playersCard");
+
+    const pinInput = document.getElementById("pin");
+    const btnEntrarHost = document.getElementById("btnEntrarHost");
+
+    const estadoJuego = document.getElementById("estadoJuego");
+    const ambiente = document.getElementById("ambiente");
+    const btnAplicar = document.getElementById("btnAplicar");
+
+    const count = document.getElementById("count");
+    const estadoTxt = document.getElementById("estadoTxt");
+    const ambienteTxt = document.getElementById("ambienteTxt");
+
+    const tbody = document.getElementById("tbody");
+
+    // PIN básico (cámbialo si quieres)
+    const HOST_PIN = "2026";
+
+    btnEntrarHost.addEventListener("click", () => {
+      if ((pinInput.value || "").trim() !== HOST_PIN) {
+        alert("PIN incorrecto 🙈");
+        return;
+      }
+      loginCard.style.display = "none";
+      panelCard.style.display = "block";
+      playersCard.style.display = "block";
+    });
+
+    // Aplicar controles (estado + ambiente)
+    btnAplicar.addEventListener("click", async () => {
+      await set(controlRef, {
+        estado: estadoJuego.value,
+        ambiente: ambiente.value,
+        updatedAt: Date.now()
+      });
+      alert("✅ Cambios aplicados");
+    });
+
+    // Leer controles actuales en vivo
+    onValue(controlRef, (snap) => {
+      const c = snap.val() || { estado: "lobby", ambiente: "dia" };
+      estadoTxt.textContent = c.estado || "lobby";
+      ambienteTxt.textContent = c.ambiente || "dia";
+      estadoJuego.value = c.estado || "lobby";
+      ambiente.value = c.ambiente || "dia";
+    });
+
+    // Lista de jugadores (salón)
+    escucharSalon((jugadores) => {
+      count.textContent = jugadores.length;
+
+      tbody.innerHTML = "";
+      jugadores
+        .sort((a,b)=> (b.updatedAt||0)-(a.updatedAt||0))
+        .slice(0, 60)
+        .forEach(j => {
+          const tr = document.createElement("tr");
+
+          const estadoClass = j.estado === "salio" ? "bad" : "ok";
+          tr.innerHTML = `
+            <td><b>${j.nombre || "Anon"}</b></td>
+            <td>${j.transporte || "-"}</td>
+            <td>${(j.piel||"-")} / ${(j.pelo||"-")} / ${(j.ropa||"-")}</td>
+            <td>${j.vidas ?? 5}</td>
+            <td class="${estadoClass}">${j.estado || "en_salon"}</td>
+          `;
+          tbody.appendChild(tr);
+        });
+    });
+  </script>
+</body>
+</html>
