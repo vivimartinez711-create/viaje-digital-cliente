@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <title>El Viaje Digital del Cliente — Juego</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <style>
+    body{margin:0;font-family:Segoe UI, sans-serif;background:#f6f7fb;}
+    header{padding:14px 18px;background:#0b3b8c;color:#fff}
+    .wrap{max-width:960px;margin:18px auto;padding:0 14px;display:grid;grid-template-columns:1fr 320px;gap:14px}
+    .card{background:#fff;border-radius:18px;padding:16px;box-shadow:0 8px 22px rgba(0,0,0,.08)}
+    .hearts{font-size:20px}
+    .opt{display:block;margin:10px 0;padding:12px;border-radius:14px;border:1px solid #d9dbe7;cursor:pointer}
+    .opt:hover{background:#f0f4ff}
+    .small{font-size:.92em;color:#555}
+    .list{font-size:.95em;line-height:1.6; max-height: 320px; overflow:auto;}
+    .tag{display:inline-block;padding:6px 10px;border-radius:999px;background:#eef3ff;color:#0b3b8c;font-weight:700;font-size:.9em}
+    @media(max-width:900px){.wrap{grid-template-columns:1fr}}
+  </style>
+</head>
+<body>
+<header>
+  <div><b>🎓 El Viaje Digital del Cliente</b> — Responde y avanza</div>
+</header>
+
+<div class="wrap">
+  <div class="card">
+    <div class="small" id="ambiente">🏫 Aula: — | 🌤️ Momento: —</div>
+    <h2 id="pregunta">Esperando a que la Licenciada inicie…</h2>
+    <div id="opciones"></div>
+    <div class="small" id="feedback"></div>
+  </div>
+
+  <div class="card">
+    <h3>👤 Tú <span class="tag" id="miTransporte">—</span></h3>
+    <div><b id="nombre">—</b></div>
+    <div class="hearts" id="vidas">❤️❤️❤️❤️❤️</div>
+    <div class="small" id="estado">Estado: activo</div>
+
+    <hr style="margin:14px 0;">
+    <h3>🏫 Salón (en vivo)</h3>
+    <div class="list" id="lista">—</div>
+  </div>
+</div>
+
+<script type="module">
+import { db, ref, onValue, update } from "./firebase.js";
+
+const params = new URLSearchParams(location.search);
+const myId = params.get("id");
+
+const elNombre = document.getElementById("nombre");
+const elVidas = document.getElementById("vidas");
+const elEstado = document.getElementById("estado");
+const elLista = document.getElementById("lista");
+const elAmb = document.getElementById("ambiente");
+const elPreg = document.getElementById("pregunta");
+const elOps = document.getElementById("opciones");
+const elFb = document.getElementById("feedback");
+const elMiTrans = document.getElementById("miTransporte");
+
+function hearts(n){ return "❤️".repeat(Math.max(0, n||0)); }
+
+function renderPlayers(val){
+  const arr = val ? Object.entries(val).map(([id,p])=>({id,...p})) : [];
+  if(arr.length===0){ elLista.textContent="Aún no hay estudiantes."; return; }
+  arr.sort((a,b)=>(a.nombre||"").localeCompare(b.nombre||""));
+  elLista.innerHTML = arr.map(p=>{
+    const h = hearts(p.vidas ?? 5);
+    const st = p.estado || "activo";
+    const extra = st!=="activo" ? ` — <b>${st}</b>` : "";
+    return `• <b>${p.nombre||"—"}</b> ${h}${extra}`;
+  }).join("<br>");
+}
+
+function paintQuestion(q){
+  if(!q){ 
+    elPreg.textContent="Esperando pregunta…";
+    elOps.innerHTML="";
+    return;
+  }
+  elPreg.textContent = q.texto;
+  elOps.innerHTML = "";
+  q.opciones.forEach((op, idx)=>{
+    const div = document.createElement("div");
+    div.className="opt";
+    div.textContent = op;
+    div.onclick = ()=> responder(idx);
+    elOps.appendChild(div);
+  });
+}
+
+async function responder(idx){
+  if(!myId) { alert("No se encontró tu ID. Regresa a index.html"); return; }
+
+  const st = await new Promise(res=>onValue(ref(db,"room/estado"), s=>res(s.val()), {onlyOnce:true}));
+  const q = st?.preguntaActual;
+  if(!q) return;
+
+  const ok = (idx === q.correcta);
+
+  await update(ref(db, "room/jugadores/" + myId), {
+    ultimaRespuesta: idx,
+    ultimaCorrecta: ok,
+    ultimaEn: Date.now()
+  });
+
+  elFb.innerHTML = ok ? "✅ ¡Correcto! avanzas." : "❌ Incorrecto. (La Licda aplicará la penalización).";
+}
+
+// Mi ficha
+onValue(ref(db, "room/jugadores/" + myId), (snap)=>{
+  const p = snap.val();
+  if(!p) return;
+  elNombre.textContent = p.nombre || "—";
+  elVidas.textContent = hearts(p.vidas ?? 5);
+  elEstado.textContent = "Estado: " + (p.estado || "activo");
+  elMiTrans.textContent = p.transporte || "—";
+});
+
+// Salón
+onValue(ref(db, "room/jugadores"), (snap)=> renderPlayers(snap.val()));
+
+// Estado del juego + pregunta actual
+onValue(ref(db, "room/estado"), (snap)=>{
+  const st = snap.val();
+  if(!st) return;
+
+  elAmb.textContent = `🏫 Aula: ${st.aula || "—"} | 🌤️ Momento: ${st.momento || "—"}`;
+
+  if(st.fase === "quiz") paintQuestion(st.preguntaActual);
+  if(st.fase === "fin") {
+    elPreg.textContent = "🏆 Juego finalizado. Revisa resultados.";
+    elOps.innerHTML = "";
+  }
+});
+</script>
+</body>
+</html>
