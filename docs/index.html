@@ -179,6 +179,8 @@
         ropa,
         vidas: 5
       });
+localStorage.setItem("playerId", nombre.trim().toLowerCase().replace(/\s+/g, "_"));
+localStorage.setItem("playerName", nombre.trim());
 
       alert("¡Entraste al salón 🎓✨");
     };
