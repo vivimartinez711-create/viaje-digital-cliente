@@ -1,169 +1,384 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>El Viaje Digital del Cliente - Lobby</title>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>El Viaje Digital del Cliente</title>
+
   <style>
-    body{margin:0;font-family:Segoe UI,system-ui;background:linear-gradient(#b3d9ff,#e6f2ff);text-align:center}
-    h1{margin:22px 0 6px}
-    .card{background:#fff;width:92%;max-width:980px;margin:14px auto;padding:16px;border-radius:18px;box-shadow:0 10px 25px rgba(0,0,0,.15);text-align:left}
-    .grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}
-    @media(max-width:900px){.grid{grid-template-columns:1fr}}
-    label{font-weight:800;display:block;margin:10px 0 6px}
-    input,select,button{width:100%;padding:11px;border-radius:12px;border:1px solid #cfd8e3;font-size:1em}
-    button{background:#004aad;color:#fff;font-weight:900;border:none;cursor:pointer}
-    button:hover{background:#00317a}
-    .pill{display:inline-block;padding:7px 12px;border-radius:999px;font-weight:900;font-size:.92em;background:#dcecff;color:#00317a;margin-right:8px}
-    .box{background:#f6f9ff;border:1px solid #e3ecff;border-radius:14px;padding:12px}
-    .muted{color:#456;opacity:.9}
-    ul{margin:8px 0 0 18px}
+    :root{
+      --bg1:#cfe8ff;
+      --bg2:#eef7ff;
+      --card:#ffffff;
+      --text:#0f172a;
+      --muted:#64748b;
+      --line:#e5e7eb;
+      --blue:#0b4aa6;
+      --blue2:#0a3d8a;
+      --pill:#0ea5e9;
+      --green:#22c55e;
+      --shadow:0 18px 50px rgba(0,0,0,.18);
+      --radius:22px;
+    }
+    *{box-sizing:border-box}
+    body{
+      margin:0;
+      font-family: "Segoe UI", system-ui, -apple-system, Arial, sans-serif;
+      color:var(--text);
+      background: linear-gradient(180deg,var(--bg1),var(--bg2));
+      min-height:100vh;
+      display:flex;
+      align-items:flex-start;
+      justify-content:center;
+      padding:28px 14px;
+    }
+    .wrap{width:100%; max-width:1050px;}
+    .title{
+      text-align:center;
+      margin-bottom:16px;
+    }
+    .title h1{
+      margin:0;
+      font-size:38px;
+      font-weight:800;
+      letter-spacing:.2px;
+    }
+    .title p{
+      margin:6px 0 0;
+      color:var(--muted);
+      font-size:16px;
+    }
+
+    .card{
+      background:var(--card);
+      border-radius:var(--radius);
+      box-shadow:var(--shadow);
+      padding:18px;
+      overflow:hidden;
+    }
+
+    .grid{
+      display:grid;
+      grid-template-columns: 1.05fr 1fr;
+      gap:16px;
+    }
+    @media (max-width: 860px){
+      .grid{grid-template-columns:1fr}
+    }
+
+    .box{
+      border:1px solid var(--line);
+      border-radius:18px;
+      padding:14px;
+      background:#fbfdff;
+    }
+
+    .row{
+      display:flex;
+      gap:12px;
+      align-items:center;
+      justify-content:space-between;
+      flex-wrap:wrap;
+      margin-bottom:10px;
+    }
+
+    label{
+      display:block;
+      font-weight:700;
+      margin:10px 0 6px;
+    }
+    .hint{color:var(--muted); font-size:13px; margin-top:4px}
+
+    input, select{
+      width:100%;
+      padding:12px 12px;
+      border-radius:12px;
+      border:1px solid var(--line);
+      font-size:15px;
+      outline:none;
+      background:#fff;
+    }
+    input:focus, select:focus{border-color:#bcd6ff; box-shadow:0 0 0 4px rgba(11,74,166,.08)}
+    .btn{
+      width:100%;
+      border:none;
+      background:var(--blue);
+      color:#fff;
+      font-weight:800;
+      padding:14px 14px;
+      border-radius:14px;
+      cursor:pointer;
+      margin-top:14px;
+      font-size:16px;
+      letter-spacing:.2px;
+    }
+    .btn:hover{background:var(--blue2)}
+    .wait{
+      margin-top:10px;
+      background:#0f172a;
+      color:#fff;
+      border-radius:14px;
+      padding:12px 14px;
+      font-weight:700;
+      display:flex;
+      align-items:center;
+      gap:10px;
+    }
+    .wait small{font-weight:500; opacity:.85}
+
+    .pill{
+      display:inline-flex;
+      align-items:center;
+      gap:8px;
+      border-radius:999px;
+      padding:8px 12px;
+      font-weight:800;
+      color:#0b1220;
+      background:#e8f7ff;
+      border:1px solid #d4f1ff;
+    }
+    .pill.blue{background:#e9f7ff; border-color:#cdefff;}
+    .pill.green{background:#eafbea; border-color:#c9f2d1;}
+    .pill strong{font-size:14px}
+    .statusbar{
+      display:flex;
+      gap:10px;
+      align-items:center;
+      justify-content:flex-start;
+      flex-wrap:wrap;
+      margin-bottom:10px;
+    }
+
+    .list{
+      margin:0;
+      padding:10px 12px;
+      border-radius:14px;
+      border:1px solid var(--line);
+      background:#fff;
+      min-height:44px;
+      max-height:260px;
+      overflow:auto;
+      font-size:14px;
+      line-height:1.55;
+    }
+    .list .muted{color:var(--muted)}
+    .sectionTitle{
+      display:flex;
+      align-items:center;
+      gap:10px;
+      margin:0 0 8px;
+      font-size:16px;
+      font-weight:900;
+    }
+
+    .events{
+      border-radius:14px;
+      border:1px solid var(--line);
+      background:#fff;
+      padding:10px 12px;
+      color:var(--muted);
+      font-size:14px;
+      min-height:44px;
+    }
+    .footerNote{
+      margin-top:10px;
+      color:var(--muted);
+      font-size:13px;
+      text-align:left;
+    }
   </style>
 </head>
-<body>
-  <h1> El Viaje Digital del Cliente</h1>
-  <div class="muted">Lobby en vivo (entra aquí primero)</div>
 
-  <div class="card">
-    <div style="display:flex;flex-wrap:wrap;gap:8px;justify-content:space-between;align-items:center">
-      <div>
-        <span class="pill" id="phase">Fase: lobby</span>
-        <span class="pill" id="count">0 conectados</span>
-      </div>
-      <div class="muted">Host: <a href="./host.html" target="_blank">abrir panel</a></div>
+<body>
+  <div class="wrap">
+    <div class="title">
+      <h1>🎓 El Viaje Digital del Cliente</h1>
+      <p>Batalla universitaria — todos juegan en vivo</p>
     </div>
 
-    <div class="grid" style="margin-top:12px">
-      <div>
-        <label>👤 Tu nombre</label>
-        <input id="nombre" placeholder="Ej. Andrea, Vivi, Carlos"/>
+    <div class="card">
+      <div class="grid">
 
-        <label>🚌 ¿Cómo llegas a la U?</label>
-        <select id="transporte">
-          <option>🚌 Bus (gallinera)</option>
-          <option>🚗 Carro</option>
-          <option>🏍️ Moto</option>
-          <option>🚶 A pie</option>
-        </select>
-
-        <label>🧑‍🎓 Personaje</label>
-        <select id="personaje">
-          <option>Mujer (Falda + blusa)</option>
-          <option>Mujer (jean + blusa)</option>
-          <option>Hombre (jean + camiseta)</option>
-          <option>Hombre (short + camisa)</option>
-        </select>
-
-        <label>🎨 Piel</label>
-        <select id="piel">
-          <option>Blanca</option>
-          <option>Morena</option>
-        </select>
-
-        <label>💇 Pelo</label>
-        <select id="pelo">
-          <option>Negro</option>
-          <option>Castaño</option>
-          <option>Rubio</option>
-          <option>Pelón</option>
-        </select>
-
-        <label>👕 Color camisa/blusa</label>
-        <select id="ropa">
-          <option>Azul</option>
-          <option>Verde</option>
-          <option>Rosa</option>
-          <option>Gris</option>
-        </select>
-
-        <button id="btn">Entrar a la Universidad</button>
-        <div class="muted" style="margin-top:10px">
-          Cuando den “Iniciar juego”, te manda automático al juego 🎮
-        </div>
-      </div>
-
-      <div>
+        <!-- IZQUIERDA: FORM -->
         <div class="box">
-          <b>🏫 Salón en vivo</b>
-          <div id="lista" class="muted" style="margin-top:8px">Cargando…</div>
+          <label>👤 Tu nombre</label>
+          <input id="nombre" placeholder="Ej. Vivi, Ana, Carlos" />
+
+          <label>🧑‍🎓 Personaje</label>
+          <select id="personaje">
+            <option value="mujer_falda_blusa">Mujer (falda + blusa)</option>
+            <option value="mujer_jean_blusa">Mujer (jean + blusa)</option>
+            <option value="hombre_jean_camiseta">Hombre (jean + camiseta)</option>
+            <option value="hombre_short_camisa">Hombre (short + camisa)</option>
+          </select>
+
+          <label>🚌 ¿Cómo llegas a la U?</label>
+          <select id="transporte">
+            <option value="bus">🚌 Bus (gallinera)</option>
+            <option value="carro">🚗 Carro</option>
+            <option value="moto">🏍️ Moto</option>
+            <option value="pie">🚶 A pie</option>
+          </select>
+
+          <label>🎨 Piel</label>
+          <select id="piel">
+            <option value="blanca">Blanca</option>
+            <option value="morena_clara">Morena clara</option>
+          </select>
+
+          <label>💇 Pelo</label>
+          <select id="pelo">
+            <option value="negro">Negro</option>
+            <option value="castaño">Castaño</option>
+            <option value="rubio">Rubio</option>
+          </select>
+
+          <label>👕 Color camisa/blusa</label>
+          <select id="ropa">
+            <option value="azul">Azul</option>
+            <option value="rosa">Rosa</option>
+            <option value="verde">Verde</option>
+            <option value="gris">Gris</option>
+          </select>
+
+          <button class="btn" id="btnEntrar">Entrar a la Universidad</button>
+
+          <div class="wait" id="estadoEspera" style="display:none;">
+            ⏳ <div>
+              <div>Esperando que la Licda inicie el juego…</div>
+              <small>Host (tú): abre <b>host.html</b> para iniciar / controlar preguntas.</small>
+            </div>
+          </div>
         </div>
 
-        <div class="box" style="margin-top:12px">
-          <b>📣 Eventos</b>
-          <div id="events" class="muted" style="margin-top:8px">—</div>
+        <!-- DERECHA: LOBBY -->
+        <div class="box">
+          <div class="statusbar">
+            <span class="pill blue">Fase: <strong id="faseTxt">Lobby</strong></span>
+            <span class="pill green"><strong id="countTxt">0</strong> conectados</span>
+          </div>
+
+          <div class="sectionTitle">🏫 Salón en vivo</div>
+          <div class="list" id="lista">
+            <div class="muted">Cargando…</div>
+          </div>
+
+          <div style="height:10px"></div>
+
+          <div class="sectionTitle">📣 Eventos (se ven para todos)</div>
+          <div class="events" id="eventos">Aún no hay eventos…</div>
+
+          <div class="footerNote">
+            Si ves “0 conectados”, es porque NO se guardó el jugador en Firebase.
+          </div>
         </div>
+
       </div>
     </div>
   </div>
 
-<script type="module">
-  import {
-    hostInit, hostListen, lobbyListen, joinLobby, pingLobby, eventsListen
-  } from "./firebase.js";
+  <!-- LÓGICA -->
+  <script type="module">
+    // ⚠️ Este index usa tu firebase.js en /docs/firebase.js
+    // firebase.js debe exportar: db, ref, push, set, onValue, onDisconnect, serverTimestamp, update
+    import { db, ref, push, set, onValue, onDisconnect, serverTimestamp, update } from "./firebase.js";
 
-  const $ = (id)=>document.getElementById(id);
-  const esc = (s)=>String(s||"").replaceAll("&","&amp;").replaceAll("<","&lt;").replaceAll(">","&gt;");
+    const $ = (id) => document.getElementById(id);
 
-  await hostInit();
+    const btnEntrar = $("btnEntrar");
+    const lista = $("lista");
+    const countTxt = $("countTxt");
+    const faseTxt = $("faseTxt");
+    const estadoEspera = $("estadoEspera");
+    const eventos = $("eventos");
 
-  let myId = sessionStorage.getItem("vd_id") || "";
-  let joined = sessionStorage.getItem("vd_joined")==="1";
+    let myPlayerKey = null;
 
-  hostListen((h)=>{
-    const phase = (h?.phase || "lobby");
-    $("phase").textContent = "Fase: " + phase;
+    // --- refs principales en RTDB
+    const phaseRef   = ref(db, "control/phase");
+    const playersRef = ref(db, "players");
+    const eventsRef  = ref(db, "events/last");
 
-    if ((phase === "juego") && joined) {
-      location.href = "./juego.html";
+    // --- cargar fase
+    onValue(phaseRef, (snap) => {
+      const phase = snap.exists() ? snap.val() : "lobby";
+      faseTxt.textContent = (phase || "lobby").toString().toUpperCase() === "LOBBY" ? "Lobby" : phase;
+      // si host manda a juego, redirigimos
+      if (phase === "game") {
+        // tu archivo del juego debe existir en /docs/juego.html (o cambia esto si se llama distinto)
+        window.location.href = "./juego.html";
+      }
+    });
+
+    // --- cargar eventos
+    onValue(eventsRef, (snap) => {
+      if (!snap.exists()) return;
+      const e = snap.val();
+      eventos.textContent = e?.text ? e.text : "—";
+    });
+
+    // --- render lobby
+    onValue(playersRef, (snap) => {
+      const data = snap.exists() ? snap.val() : {};
+      const keys = Object.keys(data || {});
+      countTxt.textContent = keys.length.toString();
+
+      if (!keys.length) {
+        lista.innerHTML = '<div class="muted">Aún no hay estudiantes en el salón…</div>';
+        return;
+      }
+
+      // lista: nombre + ❤️ según vidas + “— salió” si estado=left
+      const rows = keys.map((k) => {
+        const p = data[k] || {};
+        const nombre = (p.nombre || "Sin nombre").toString();
+        const vidas = Number(p.vidas ?? 3);
+        const hearts = "❤️".repeat(Math.max(0, Math.min(3, vidas)));
+        const extra = p.estado === "left" ? " — salió" : "";
+        return `• <b>${escapeHtml(nombre)}</b> ${hearts}${extra}`;
+      });
+
+      lista.innerHTML = rows.join("<br>");
+    });
+
+    // --- entrar al lobby (CREA jugador en Firebase)
+    btnEntrar.addEventListener("click", async () => {
+      const nombre = ($("nombre").value || "").trim();
+      if (!nombre) return alert("Escribe tu nombre");
+
+      const payload = {
+        nombre,
+        personaje: $("personaje").value,
+        transporte: $("transporte").value,
+        piel: $("piel").value,
+        pelo: $("pelo").value,
+        ropa: $("ropa").value,
+        vidas: 3,
+        estado: "lobby",
+        joinedAt: serverTimestamp()
+      };
+
+      // crea registro del jugador
+      const newRef = push(playersRef);
+      myPlayerKey = newRef.key;
+      await set(newRef, payload);
+
+      // presencia: si se cierra pestaña, marcar “salió”
+      const myRef = ref(db, `players/${myPlayerKey}`);
+      onDisconnect(myRef).update({ estado: "left", leftAt: serverTimestamp() });
+
+      // UI
+      btnEntrar.disabled = true;
+      btnEntrar.textContent = "✅ Listo — esperando a la Licda…";
+      estadoEspera.style.display = "flex";
+    });
+
+    // --- util
+    function escapeHtml(s){
+      return s.replace(/[&<>"']/g, (m) => ({
+        "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"
+      }[m]));
     }
-  });
-
-  lobbyListen((obj)=>{
-    const ids = obj ? Object.keys(obj) : [];
-    $("count").textContent = `${ids.length} conectados`;
-    if(!obj){ $("lista").innerHTML = "—"; return; }
-
-    const arr = Object.values(obj).filter(Boolean).slice(-40).reverse();
-    $("lista").innerHTML = "<ul>" + arr.map(x=>{
-      const tag = x.status === "offline" ? " (offline)" : "";
-      return `<li>${esc(x.nombre)}${tag}</li>`;
-    }).join("") + "</ul>";
-  });
-
-  eventsListen((obj)=>{
-    if(!obj){ $("events").textContent="—"; return; }
-    const arr = Object.values(obj).filter(Boolean).slice(-8).reverse();
-    $("events").innerHTML = "<ul>" + arr.map(e=>`<li>${esc(e.texto)}</li>`).join("") + "</ul>";
-  });
-
-  $("btn").addEventListener("click", async ()=>{
-    const nombre = $("nombre").value.trim();
-    if(!nombre) return alert("Escribe tu nombre 😊");
-
-    const payload = {
-      id: myId || undefined,
-      nombre,
-      transporte: $("transporte").value,
-      personaje: $("personaje").value,
-      piel: $("piel").value,
-      pelo: $("pelo").value,
-      ropa: $("ropa").value
-    };
-
-    try{
-      myId = await joinLobby(payload);
-      sessionStorage.setItem("vd_id", myId);
-      sessionStorage.setItem("vd_joined","1");
-      sessionStorage.setItem("vd_nombre", nombre);
-      joined = true;
-      alert("¡Listo! Ya estás en el salón. Espera a que la Licda inicie el juego 🎮");
-    }catch(e){
-      console.error(e);
-      alert("No se pudo entrar. Revisa Rules en Firebase (read/write).");
-    }
-  });
-
-  setInterval(()=>{ if(myId && joined) pingLobby(myId); }, 15000);
-</script>
+  </script>
 </body>
 </html>
