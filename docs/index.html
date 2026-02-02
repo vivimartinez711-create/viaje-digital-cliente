@@ -105,6 +105,12 @@
 
 <script type="module">
   import { db, ref, set, update, onValue, onDisconnect, serverTimestamp } from "./firebase.js";
+onValue(ref(db, "game/state"), (snap) => {
+  const data = snap.val();
+  if (data && data.status === "playing") {
+    location.href = "./juego.html";
+  }
+});
 
   const $ = (id)=>document.getElementById(id);
   const avatarBox = $("avatarBox");
