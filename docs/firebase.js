@@ -1,4 +1,3 @@
-// docs/firebase.js  (Firebase v10 CDN + Realtime Database)
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-app.js";
 import {
   getDatabase, ref, set, update, push, remove, onValue, onDisconnect, serverTimestamp, get
