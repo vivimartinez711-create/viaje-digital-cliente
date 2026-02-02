@@ -1,98 +1,158 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Panel Host</title>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>Host — El Viaje Digital del Cliente</title>
   <style>
-    body{margin:0;font-family:Segoe UI,system-ui;background:#071120;color:#fff}
-    .wrap{max-width:900px;margin:40px auto;padding:0 18px}
-    .card{background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.12);
-      border-radius:18px;padding:18px;box-shadow:0 20px 60px rgba(0,0,0,.45)}
-    h1{margin:0 0 6px 0}
-    .muted{opacity:.85;margin:0 0 18px}
-    .row{display:flex;gap:12px;align-items:center}
-    input,button{height:46px;border-radius:14px;border:1px solid rgba(255,255,255,.18);
-      background:rgba(0,0,0,.25);color:#fff;padding:0 14px;font-size:16px}
-    input{flex:1}
-    button{min-width:160px;background:#2f6df6;border:none;font-weight:700;cursor:pointer}
+    body{margin:0;font-family:Segoe UI,system-ui;background:radial-gradient(circle at top,#0f1b33,#070b14);color:#fff}
+    .wrap{max-width:1100px;margin:18px auto;padding:0 14px}
+    h1{margin:8px 0 6px}
+    .sub{margin:0 0 14px;opacity:.85}
+    .grid{display:grid;grid-template-columns:420px 1fr;gap:14px}
+    @media(max-width:980px){.grid{grid-template-columns:1fr}}
+    .card{background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.12);border-radius:18px;padding:14px;box-shadow:0 18px 55px rgba(0,0,0,.45)}
+    input,button{width:100%;padding:12px 14px;border-radius:14px;border:1px solid rgba(255,255,255,.18);box-sizing:border-box;font-size:16px}
+    input{background:rgba(0,0,0,.25);color:#fff}
+    button{border:none;background:#2f6df6;color:#fff;font-weight:900;cursor:pointer}
     button:hover{filter:brightness(1.06)}
-    .hidden{display:none}
-    .ok{color:#7CFFB2}
-    .warn{color:#ffcf6e}
     .btn2{background:#16a34a}
     .btn3{background:#ef4444}
+    .row{display:flex;gap:10px;flex-wrap:wrap}
+    .row button{flex:1;min-width:160px}
+    .list{background:rgba(0,0,0,.25);border:1px solid rgba(255,255,255,.12);border-radius:14px;padding:12px;min-height:220px;white-space:pre-line;line-height:1.65;font-size:14px}
+    .pill{display:inline-block;background:#22c55e;color:#02110a;font-weight:900;padding:6px 10px;border-radius:999px;margin-right:8px}
+    .pill2{background:#0ea5e9;color:#001019}
+    .muted{opacity:.85;font-size:13px}
   </style>
 </head>
 <body>
   <div class="wrap">
     <h1>👩‍🏫 Panel Host (Licda = tú)</h1>
-    <p class="muted">Control en vivo — El Viaje Digital del Cliente</p>
+    <p class="sub">Control en vivo — iniciar, pasar preguntas, finalizar y mostrar podio</p>
 
-    <div class="card" id="loginCard">
-      <div class="row">
-        <input id="pin" value="2026" placeholder="PIN (2026)" />
-        <button id="btnEntrar">Entrar</button>
+    <div class="grid">
+      <div class="card">
+        <div class="row">
+          <div style="flex:1">
+            <div class="muted">PIN</div>
+            <input id="pin" placeholder="2026" value="2026"/>
+          </div>
+        </div>
+
+        <div style="height:10px"></div>
+
+        <div class="row">
+          <button id="btnLogin" class="btn2">Entrar</button>
+          <button id="btnStart" disabled>🚀 Iniciar Juego</button>
+        </div>
+        <div class="row" style="margin-top:10px">
+          <button id="btnNext" disabled class="btn2">➡️ Siguiente Pregunta</button>
+          <button id="btnEnd" disabled class="btn3">🏁 Finalizar</button>
+        </div>
+        <div class="row" style="margin-top:10px">
+          <button id="btnReset" disabled class="btn3">🧹 Reset Total</button>
+        </div>
+
+        <p class="muted" style="margin-top:12px">
+          ✅ “Iniciar” manda automáticamente a todos a <b>juego.html</b><br>
+          ✅ “Siguiente” cambia de salón (día → tarde → noche → jefe final)
+        </p>
+
+        <div style="margin-top:10px">
+          <span class="pill2" id="statePill">estado: …</span>
+          <span class="pill" id="qPill">pregunta: …</span>
+        </div>
+
+        <div class="list" id="log" style="margin-top:10px">Esperando…</div>
       </div>
-      <p class="muted" style="margin-top:10px">Si no entra, era porque Firebase no estaba cargando.</p>
-    </div>
 
-    <div class="card hidden" id="panelCard" style="margin-top:16px">
-      <h2 style="margin:0 0 10px 0">🎮 Controles</h2>
-      <div class="row" style="flex-wrap:wrap">
-        <button class="btn2" id="btnLobby">Mandar a Lobby</button>
-        <button class="btn2" id="btnIniciar">Iniciar Juego</button>
-        <button class="btn3" id="btnReset">Reset</button>
+      <div class="card">
+        <h3 style="margin:0 0 8px">👥 Jugadores</h3>
+        <div class="list" id="playersBox">Cargando…</div>
       </div>
-
-      <p class="muted" style="margin:14px 0 8px">Estado:</p>
-      <div id="estado" class="warn">Cargando…</div>
     </div>
   </div>
 
-  <script type="module">
-    import { db, ref, set, onValue, serverTimestamp } from "./firebase.js";
-    
-    const PIN_OK = "2026";
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+  <script src="./firebase.js"></script>
 
-    const loginCard = document.getElementById("loginCard");
-    const panelCard = document.getElementById("panelCard");
-    const estado = document.getElementById("estado");
+  <script>
+    const PIN_OK="2026";
+    const $=id=>document.getElementById(id);
+    const logBox=$("log"), playersBox=$("playersBox");
+    const btnLogin=$("btnLogin"), btnStart=$("btnStart"), btnNext=$("btnNext"), btnEnd=$("btnEnd"), btnReset=$("btnReset");
 
-    const btnEntrar = document.getElementById("btnEntrar");
-    const btnLobby = document.getElementById("btnLobby");
-    const btnIniciar = document.getElementById("btnIniciar");
-    const btnReset = document.getElementById("btnReset");
+    function log(t){ logBox.textContent = t; }
 
-    btnEntrar.onclick = async () => {
-      
-      const pin = document.getElementById("pin").value.trim();
-      if (pin !== PIN_OK) return alert("PIN incorrecto 😅 (debe ser 2026)");
-      await set(ref(db, "game/state"), {
-  status: "playing",
-  startedAt: serverTimestamp()
-});
-
-
-      loginCard.classList.add("hidden");
-      panelCard.classList.remove("hidden");
-
-      // Deja el juego listo en lobby
-      await set(ref(db, "game/state"), { phase: "lobby", updatedAt: serverTimestamp() });
+    btnLogin.onclick=()=>{
+      const p=$("pin").value.trim();
+      if(p!==PIN_OK){ log("❌ PIN incorrecto"); return; }
+      btnStart.disabled=false; btnNext.disabled=false; btnEnd.disabled=false; btnReset.disabled=false;
+      log("✅ Host habilitado.");
     };
 
-    btnLobby.onclick = () => set(ref(db, "game/state"), { phase: "lobby", updatedAt: serverTimestamp() });
-    btnIniciar.onclick = () => set(ref(db, "game/state"), { phase: "juego", updatedAt: serverTimestamp() });
-    btnReset.onclick = () => set(ref(db, "game"), { state: { phase: "lobby", updatedAt: serverTimestamp() } });
+    // Estado inicial
+    async function setState(obj){ await DB.ref("game/state").set(obj); }
+
+    btnStart.onclick=async ()=>{
+      await setState({ status:"playing", qIndex:0, startedAt:Date.now() });
+      await DB.ref("game/event").set({ ts:Date.now(), text:"🎒 Todos ingresan al salón. ¡Inicia la batalla!" });
+      log("🚀 Juego iniciado (qIndex=0).");
+      location.href="./juego.html"; // también te manda a ti
+    };
+
+    btnNext.onclick=async ()=>{
+      const snap = await DB.ref("game/state").get();
+      const st = snap.val() || {status:"playing", qIndex:0};
+      const next = (st.qIndex||0) + 1;
+      await setState({ status:"playing", qIndex: next, startedAt: st.startedAt || Date.now() });
+      await DB.ref("game/event").set({ ts:Date.now(), text:`🏫 Cambio de salón: pregunta ${next+1}` });
+      log(`➡️ Avanzaste a pregunta ${next}.`);
+    };
+
+    btnEnd.onclick=async ()=>{
+      // calcula top 3
+      const ps = (await DB.ref("players").get()).val() || {};
+      const arr = Object.entries(ps).map(([id,p])=>({id,...p}))
+        .sort((a,b)=>(b.score||0)-(a.score||0));
+      const top3 = arr.slice(0,3).map(x=>({id:x.id,nombre:x.nombre,score:x.score||0}));
+
+      await DB.ref("game/winners").set({ ts:Date.now(), top3 });
+      await setState({ status:"finished", qIndex: (await DB.ref("game/state/qIndex").get()).val() || 0, endedAt:Date.now() });
+      await DB.ref("game/event").set({ ts:Date.now(), text:"🏆 Fin del juego. La Licda felicita al primer lugar con sus perritos 🐶🐶🐶🐶🐶" });
+      log("🏁 Finalizado. Podio enviado.");
+    };
+
+    btnReset.onclick=async ()=>{
+      await DB.ref("players").set(null);
+      await DB.ref("answers").set(null);
+      await DB.ref("game").set({ state:{ status:"lobby", qIndex:0, resetAt:Date.now() } });
+      log("🧹 Reset total hecho.");
+    };
 
     // Ver estado en vivo
-    onValue(ref(db, "game/state"), (snap) => {
-      const v = snap.val();
-      if (!v) { estado.textContent = "Sin estado aún"; return; }
-      estado.className = "ok";
-      estado.textContent = "phase = " + v.phase;
+    DB.ref("game/state").on("value",(snap)=>{
+      const s=snap.val()||{};
+      $("statePill").textContent = "estado: " + (s.status||"lobby");
+      $("qPill").textContent = "pregunta: " + (s.qIndex ?? 0);
+    });
+
+    // Ver jugadores
+    function heartsText(half){
+      const full = Math.floor((half||0)/2);
+      const halfHeart = ((half||0)%2) ? "💗" : "";
+      return "❤️".repeat(full)+halfHeart;
+    }
+    DB.ref("players").on("value",(snap)=>{
+      const obj=snap.val()||{};
+      const arr=Object.entries(obj).map(([id,p])=>({id,...p}))
+        .sort((a,b)=>(b.score||0)-(a.score||0));
+      if(!arr.length){ playersBox.textContent="Aún no hay estudiantes…"; return; }
+      const lines=arr.map((p,i)=>`${i+1}) ${p.nombre} ${heartsText(p.heartsHalf)} | score=${p.score||0}${p.eliminado?" ❌":""}`);
+      playersBox.textContent=lines.join("\n");
     });
   </script>
 </body>
 </html>
-
