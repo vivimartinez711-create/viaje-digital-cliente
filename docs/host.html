@@ -2,138 +2,91 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8" />
-  <title>Panel Host — El Viaje Digital del Cliente</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Panel Host</title>
   <style>
-    body{
-      margin:0;
-      font-family: "Segoe UI", sans-serif;
-      background: radial-gradient(1200px 700px at 20% 10%, #1a2a4a 0%, #0b1220 55%, #070b14 100%);
-      color:#fff;
-      min-height:100vh;
-    }
-    .wrap{max-width:980px;margin:0 auto;padding:28px 18px;}
-    h1{margin:0 0 8px;}
-    .sub{opacity:.85;margin:0 0 18px;}
-    .card{
-      background: rgba(255,255,255,.06);
-      border: 1px solid rgba(255,255,255,.10);
-      border-radius: 18px;
-      padding: 18px;
-      box-shadow: 0 12px 30px rgba(0,0,0,.35);
-    }
-    input,button{
-      padding:12px 14px;border-radius:14px;border:1px solid rgba(255,255,255,.18);
-      background: rgba(0,0,0,.25); color:#fff; font-size:1em; box-sizing:border-box;
-    }
-    button{
-      background:#2f6bff;border:none;font-weight:800;cursor:pointer;
-      box-shadow: 0 10px 22px rgba(47,107,255,.25);
-    }
-    button:hover{filter:brightness(.95);}
-    .row{display:flex;gap:10px;flex-wrap:wrap}
-    .row > *{flex:1}
-    .btns{display:flex;gap:10px;flex-wrap:wrap;margin-top:12px}
-    .btns button{flex:1; min-width: 170px;}
-    table{width:100%;border-collapse:collapse;margin-top:12px;font-size:.95em;}
-    th,td{padding:10px;border-bottom:1px solid rgba(255,255,255,.12);text-align:left;}
-    .pill{display:inline-block;padding:2px 10px;border-radius:999px;background:rgba(255,255,255,.10);border:1px solid rgba(255,255,255,.14);}
-    .muted{opacity:.8;font-size:.92em;margin-top:10px;}
-    .ok{color:#8dffb1;font-weight:800;}
-    .bad{color:#ff9a9a;font-weight:800;}
+    body{margin:0;font-family:Segoe UI,system-ui;background:#071120;color:#fff}
+    .wrap{max-width:900px;margin:40px auto;padding:0 18px}
+    .card{background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.12);
+      border-radius:18px;padding:18px;box-shadow:0 20px 60px rgba(0,0,0,.45)}
+    h1{margin:0 0 6px 0}
+    .muted{opacity:.85;margin:0 0 18px}
+    .row{display:flex;gap:12px;align-items:center}
+    input,button{height:46px;border-radius:14px;border:1px solid rgba(255,255,255,.18);
+      background:rgba(0,0,0,.25);color:#fff;padding:0 14px;font-size:16px}
+    input{flex:1}
+    button{min-width:160px;background:#2f6df6;border:none;font-weight:700;cursor:pointer}
+    button:hover{filter:brightness(1.06)}
+    .hidden{display:none}
+    .ok{color:#7CFFB2}
+    .warn{color:#ffcf6e}
+    .btn2{background:#16a34a}
+    .btn3{background:#ef4444}
   </style>
 </head>
 <body>
   <div class="wrap">
     <h1>👩‍🏫 Panel Host (Licda = tú)</h1>
-    <p class="sub">Control en vivo — El Viaje Digital del Cliente</p>
+    <p class="muted">Control en vivo — El Viaje Digital del Cliente</p>
 
-    <div class="card">
+    <div class="card" id="loginCard">
       <div class="row">
-        <input id="pin" placeholder="PIN (2026)" />
-        <button id="btnLogin">Entrar</button>
+        <input id="pin" value="2026" placeholder="PIN (2026)" />
+        <button id="btnEntrar">Entrar</button>
+      </div>
+      <p class="muted" style="margin-top:10px">Si no entra, era porque Firebase no estaba cargando.</p>
+    </div>
+
+    <div class="card hidden" id="panelCard" style="margin-top:16px">
+      <h2 style="margin:0 0 10px 0">🎮 Controles</h2>
+      <div class="row" style="flex-wrap:wrap">
+        <button class="btn2" id="btnLobby">Mandar a Lobby</button>
+        <button class="btn2" id="btnIniciar">Iniciar Juego</button>
+        <button class="btn3" id="btnReset">Reset</button>
       </div>
 
-      <div id="zona" style="display:none;">
-        <div class="btns">
-          <button id="btnLobby">Volver a Lobby</button>
-          <button id="btnPlay">Iniciar Fase 2 (Aula)</button>
-          <button id="btnEnd">Finalizar</button>
-          <button id="btnReset" style="background:#ff3b57;">Reset total</button>
-        </div>
-
-        <div class="muted">
-          Estado actual: <span class="pill" id="estado">...</span>
-        </div>
-
-        <table>
-          <thead>
-            <tr>
-              <th>Nombre</th>
-              <th>Vidas</th>
-              <th>Status</th>
-            </tr>
-          </thead>
-          <tbody id="tbody"></tbody>
-        </table>
-
-        <div class="muted">
-          Tip: abre <span class="pill">/index.html</span> en otra pestaña para ver el lobby.
-        </div>
-      </div>
-
-      <div id="msg" class="muted"></div>
+      <p class="muted" style="margin:14px 0 8px">Estado:</p>
+      <div id="estado" class="warn">Cargando…</div>
     </div>
   </div>
 
   <script type="module">
-    import { listenPlayers, listenState, hostSetPhase, hostResetAll } from "./firebase.js";
+    import { db, ref, set, onValue, serverTimestamp } from "./firebase.js";
 
     const PIN_OK = "2026";
-    const pin = document.getElementById("pin");
-    const btnLogin = document.getElementById("btnLogin");
-    const zona = document.getElementById("zona");
-    const msg = document.getElementById("msg");
-    const tbody = document.getElementById("tbody");
+
+    const loginCard = document.getElementById("loginCard");
+    const panelCard = document.getElementById("panelCard");
     const estado = document.getElementById("estado");
 
-    btnLogin.addEventListener("click", () => {
-      if ((pin.value || "").trim() !== PIN_OK) {
-        msg.innerHTML = `<span class="bad">PIN incorrecto.</span>`;
-        return;
-      }
-      msg.innerHTML = `<span class="ok">Listo, estás como Host ✅</span>`;
-      zona.style.display = "block";
-    });
+    const btnEntrar = document.getElementById("btnEntrar");
+    const btnLobby = document.getElementById("btnLobby");
+    const btnIniciar = document.getElementById("btnIniciar");
+    const btnReset = document.getElementById("btnReset");
 
-    document.getElementById("btnLobby").addEventListener("click", () => hostSetPhase("lobby"));
-    document.getElementById("btnPlay").addEventListener("click", () => hostSetPhase("play"));
-    document.getElementById("btnEnd").addEventListener("click", () => hostSetPhase("end"));
-    document.getElementById("btnReset").addEventListener("click", async () => {
-      if (!confirm("¿Seguro? Esto borra la lista de estudiantes.")) return;
-      await hostResetAll();
-      alert("Reset listo ✅");
-    });
+    btnEntrar.onclick = async () => {
+      const pin = document.getElementById("pin").value.trim();
+      if (pin !== PIN_OK) return alert("PIN incorrecto 😅 (debe ser 2026)");
 
-    listenState((s) => {
-      estado.textContent = (s.phase || "lobby").toUpperCase();
-    });
+      loginCard.classList.add("hidden");
+      panelCard.classList.remove("hidden");
 
-    listenPlayers((players) => {
-      tbody.innerHTML = players.map(p => `
-        <tr>
-          <td>${escapeHtml(p.nombre || "sin nombre")}</td>
-          <td>${"❤️".repeat(Math.max(0, Math.min(3, Number(p.lives ?? 3))))}</td>
-          <td>${escapeHtml(p.status || "")}</td>
-        </tr>
-      `).join("") || `<tr><td colspan="3">Sin estudiantes aún</td></tr>`;
-    });
+      // Deja el juego listo en lobby
+      await set(ref(db, "game/state"), { phase: "lobby", updatedAt: serverTimestamp() });
+    };
 
-    function escapeHtml(str){
-      return String(str).replace(/[&<>"']/g, (m) =>
-        ({ "&":"&amp;", "<":"&lt;", ">":"&gt;", '"':"&quot;", "'":"&#039;" }[m])
-      );
-    }
+    btnLobby.onclick = () => set(ref(db, "game/state"), { phase: "lobby", updatedAt: serverTimestamp() });
+    btnIniciar.onclick = () => set(ref(db, "game/state"), { phase: "juego", updatedAt: serverTimestamp() });
+    btnReset.onclick = () => set(ref(db, "game"), { state: { phase: "lobby", updatedAt: serverTimestamp() } });
+
+    // Ver estado en vivo
+    onValue(ref(db, "game/state"), (snap) => {
+      const v = snap.val();
+      if (!v) { estado.textContent = "Sin estado aún"; return; }
+      estado.className = "ok";
+      estado.textContent = "phase = " + v.phase;
+    });
   </script>
 </body>
 </html>
+
