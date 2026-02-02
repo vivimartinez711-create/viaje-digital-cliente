@@ -1,243 +1,197 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8" />
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Juego - Viaje Digital</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <style>
-    body{margin:0;font-family:"Segoe UI",sans-serif;background:linear-gradient(#0b1020,#13224a);color:#fff}
+    body{margin:0;font-family:Segoe UI,system-ui;background:linear-gradient(#0b1020,#13224a);color:#fff}
     .wrap{max-width:980px;margin:0 auto;padding:18px}
-    .top{display:flex;gap:12px;flex-wrap:wrap;align-items:center;justify-content:space-between}
-    .pill{display:inline-block;padding:7px 12px;border-radius:999px;font-weight:900;background:rgba(255,255,255,.12)}
-    .card{margin-top:14px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.10);border-radius:18px;padding:16px}
+    .pill{display:inline-block;padding:7px 12px;border-radius:999px;font-weight:900;background:rgba(255,255,255,.12);margin-right:8px}
+    .card{background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.12);border-radius:18px;padding:16px;margin-top:14px}
     .row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
     @media(max-width:900px){.row{grid-template-columns:1fr}}
-    button{width:100%;padding:12px;border-radius:12px;border:none;font-weight:900;cursor:pointer;background:#2f6df6;color:#fff}
-    button:hover{background:#2457c6}
     .opt{background:rgba(255,255,255,.10);border:1px solid rgba(255,255,255,.14);padding:12px;border-radius:14px;cursor:pointer}
     .opt:hover{background:rgba(255,255,255,.16)}
+    button{width:100%;padding:12px;border-radius:12px;border:none;font-weight:900;cursor:pointer;background:#2f6df6;color:#fff}
+    button:hover{background:#2457c6}
     .muted{opacity:.85}
-    .boss{font-weight:900}
     .danger{color:#ffb3b3}
-    a{color:#a8c6ff}
+    .ok{color:#b9ffd2}
   </style>
 </head>
 <body>
-  <div class="wrap">
-    <div class="top">
-      <div>
-        <div class="pill" id="nivelPill">Nivel 1</div>
-        <div class="pill" id="vidasPill">❤️❤️❤️</div>
-        <div class="pill" id="scorePill">Puntos: 0</div>
-      </div>
-      <div class="muted">
-        <a href="./index.html">← Volver</a>
-      </div>
-    </div>
-
-    <div class="card">
-      <div class="muted">Jugador:</div>
-      <div style="font-size:22px;font-weight:900" id="playerName">—</div>
-      <div class="muted" id="playerMeta" style="margin-top:6px">—</div>
-    </div>
-
-    <div class="card" id="gameCard">
-      <div class="boss" id="bossLine">👩‍🏫 Licda: “¡Vamos con la primera!”</div>
-      <h2 id="qText" style="margin:12px 0 8px">Cargando…</h2>
-      <div class="muted" id="qSub">Elige una opción</div>
-
-      <div id="opts" class="row" style="margin-top:12px"></div>
-
-      <div style="margin-top:12px" class="muted" id="msg"></div>
-    </div>
-
-    <div class="card" id="endCard" style="display:none">
-      <h2 id="endTitle">Fin</h2>
-      <div id="endText" class="muted"></div>
-      <div style="margin-top:12px">
-        <button id="btnAgain">Volver a Lobby</button>
-      </div>
-    </div>
+<div class="wrap">
+  <div>
+    <span class="pill" id="phase">Fase: juego</span>
+    <span class="pill" id="hearts">❤️❤️❤️❤️❤️</span>
+    <span class="pill" id="score">Puntos: 0</span>
   </div>
 
-<script type="module">
-  import { hostListen } from "./firebase.js";
+  <div class="card">
+    <div class="muted">Jugador:</div>
+    <div style="font-size:22px;font-weight:900" id="name">—</div>
+    <div class="muted" id="meta" style="margin-top:6px">—</div>
+  </div>
 
-  // ✅ Si el host regresa a lobby, te saca del juego automáticamente:
-  hostListen((h)=>{
-    const fase = (h && h.fase) ? h.fase : "lobby";
-    if (fase === "lobby") {
-      // opcional: volver al lobby
-      // window.location.href = "./index.html";
-    }
+  <div class="card" id="game">
+    <div style="font-weight:900" id="nTitle">Nivel 1</div>
+    <h2 id="q" style="margin:12px 0 6px">Cargando…</h2>
+    <div class="muted" id="msg">Elige una opción</div>
+    <div id="opts" class="row" style="margin-top:12px"></div>
+  </div>
+
+  <div class="card" id="rankCard">
+    <b>🏆 Ranking en vivo</b>
+    <div id="rank" class="muted" style="margin-top:8px">—</div>
+  </div>
+
+  <div class="card" id="end" style="display:none">
+    <h2 id="endTitle">Fin</h2>
+    <div id="endText" class="muted"></div>
+    <div style="margin-top:12px"><button onclick="location.href='./index.html'">Volver al lobby</button></div>
+  </div>
+</div>
+
+<script type="module">
+  import {
+    hostListen, leaderboardListen, updatePlayer, submitLeaderboard, pushEvent
+  } from "./firebase.js";
+
+  const $=(id)=>document.getElementById(id);
+  const esc=(s)=>String(s||"").replaceAll("&","&amp;").replaceAll("<","&lt;").replaceAll(">","&gt;");
+
+  const playerId = sessionStorage.getItem("vd_id") || "";
+  const nombre = sessionStorage.getItem("vd_nombre") || "Estudiante";
+
+  $("name").textContent = nombre;
+  $("meta").textContent = "Responde rápido y suma puntos. (5 corazones)";
+
+  // Si el host manda a lobby, te “saca”
+  hostListen(h=>{
+    const phase = h?.phase || "lobby";
+    $("phase").textContent = "Fase: " + phase;
+    if(phase === "lobby") location.href = "./index.html";
   });
 
-  const playerId = sessionStorage.getItem("vd_playerId") || "";
-  const joined = sessionStorage.getItem("vd_joined") === "1";
-  const nombre = (sessionStorage.getItem("vd_nombre") || "").trim();
+  leaderboardListen(obj=>{
+    if(!obj){ $("rank").textContent="—"; return; }
+    const arr = Object.values(obj).filter(Boolean)
+      .sort((a,b)=> (b.score||0)-(a.score||0))
+      .slice(0,10);
+    $("rank").innerHTML = "<ol>" + arr.map(r=>`<li><b>${esc(r.nombre)}</b> — ${Number(r.score||0)} pts</li>`).join("") + "</ol>";
+  });
 
-  // intentamos leer lo que ya está en inputs del lobby (si no, solo nombre)
-  const playerName = sessionStorage.getItem("vd_playerName") || "";
-  document.getElementById("playerName").textContent = playerName || "Estudiante";
+  // ------- PREGUNTAS (las tuyas) -------
+  const quiz = [
+    {nivel:"🟢 NIVEL 1 – CONCEPTOS CLAVE", q:"¿Qué es la experiencia del cliente?", a:["El precio que paga el cliente","La publicidad de la empresa","La percepción total del cliente en todas sus interacciones","Solo el servicio postventa"], ok:2},
+    {nivel:"🟢 NIVEL 1 – CONCEPTOS CLAVE", q:"¿En qué momento se construye la experiencia del cliente?", a:["Solo cuando compra","Solo cuando hay un problema","Antes, durante y después de la compra","Al final del proceso"], ok:2},
+    {nivel:"🟢 NIVEL 1 – CONCEPTOS CLAVE", q:"¿Cuál es el principal rol de los medios digitales en la experiencia del cliente?", a:["Reemplazar a las personas","Aumentar publicidad","Facilitar la interacción y el servicio al cliente","Reducir costos únicamente"], ok:2},
+    {nivel:"🟢 NIVEL 1 – CONCEPTOS CLAVE", q:"La tecnología en la experiencia del cliente debe verse como:", a:["Un fin en sí mismo","Un gasto innecesario","Un habilitador de la experiencia","Un reemplazo total de la atención humana"], ok:2},
 
-  // --- Juego (3 niveles, 2 preguntas por nivel)
-  const levels = [
-    {
-      boss: "👩‍🏫 Licda: “Nivel 1: lo básico.”",
-      qs: [
-        {
-          q: "En el viaje digital del cliente, ¿qué significa “momento de verdad”?",
-          a: [
-            "Un punto de interacción que define la percepción del cliente",
-            "Un descuento sorpresa en la compra",
-            "El logo de la empresa"
-          ],
-          ok: 0
-        },
-        {
-          q: "¿Cuál es el objetivo principal de una experiencia omnicanal?",
-          a: [
-            "Tener redes sociales bonitas",
-            "Que el cliente viva una experiencia consistente en todos los canales",
-            "Usar solo un canal para vender"
-          ],
-          ok: 1
-        }
-      ]
-    },
-    {
-      boss: "🧑‍🏫 Profe exigente: “Nivel 2: estrategia y datos.”",
-      qs: [
-        {
-          q: "¿Qué KPI es más útil para medir fricción en un proceso digital?",
-          a: [
-            "Tasa de abandono (drop-off) en el flujo",
-            "Cantidad de colores en la web",
-            "Número de memes publicados"
-          ],
-          ok: 0
-        },
-        {
-          q: "¿Para qué se usa un mapa del viaje del cliente (customer journey map)?",
-          a: [
-            "Para ver pasos, emociones y puntos de dolor del cliente",
-            "Para decorar presentaciones",
-            "Para reemplazar el servicio al cliente"
-          ],
-          ok: 0
-        }
-      ]
-    },
-    {
-      boss: "👩‍💼 Jefe final: “Nivel 3: transformación digital real.”",
-      qs: [
-        {
-          q: "¿Qué combinación es más sana para transformar una experiencia digital?",
-          a: [
-            "Tecnología + procesos + personas",
-            "Solo comprar software caro",
-            "Solo capacitar y ya"
-          ],
-          ok: 0
-        },
-        {
-          q: "Si el cliente se queja de “respuestas diferentes” por canal, ¿qué falta?",
-          a: [
-            "Consistencia y gobernanza omnicanal",
-            "Más emojis en el chat",
-            "Que el cliente se acostumbre"
-          ],
-          ok: 0
-        }
-      ]
-    }
+    {nivel:"🟡 NIVEL 2 – ESTRATEGIA DIGITAL", q:"¿Cuál es el objetivo principal de una estrategia digital centrada en el cliente?", a:["Usar más plataformas","Reducir fricciones y generar valor","Automatizar todo","Tener presencia en redes sociales"], ok:1},
+    {nivel:"🟡 NIVEL 2 – ESTRATEGIA DIGITAL", q:"¿Qué característica es clave para una buena estrategia digital?", a:["Que cada canal funcione separado","Que solo exista un canal","Integración coherente entre canales","Uso exclusivo de tecnología"], ok:2},
+    {nivel:"🟡 NIVEL 2 – ESTRATEGIA DIGITAL", q:"¿Qué acción ayuda a mejorar la experiencia digital del cliente?", a:["No escuchar al cliente","Conocer sus necesidades y expectativas","Copiar a la competencia","Cambiar el logo"], ok:1},
+    {nivel:"🟡 NIVEL 2 – ESTRATEGIA DIGITAL", q:"¿Por qué es importante mantener un enfoque humano en lo digital?", a:["Porque la tecnología es limitada","Porque reduce costos","Porque detrás de cada interacción hay una persona","Porque lo digital no funciona solo"], ok:2},
+
+    {nivel:"🔴 NIVEL 3 – CASOS PRÁCTICOS", q:"¿Qué hace bien Amazon en su experiencia digital?", a:["Procesos complicados","Falta de atención postventa","Plataforma ágil y personalizada","Uso limitado de tecnología"], ok:2},
+    {nivel:"🔴 NIVEL 3 – CASOS PRÁCTICOS", q:"¿Por qué Amazon es considerado un caso exitoso de experiencia del cliente?", a:["Por su publicidad","Por ofrecer precios bajos únicamente","Por facilitar todo el recorrido del cliente","Por eliminar la atención humana"], ok:2},
+    {nivel:"🔴 NIVEL 3 – CASOS PRÁCTICOS", q:"¿Qué aspecto destaca en el ejemplo de Cemaco en Guatemala?", a:["Venta solo presencial","Falta de información digital","Uso de comercio electrónico para facilitar la compra","Procesos confusos para el cliente"], ok:2},
+    {nivel:"🔴 NIVEL 3 – CASOS PRÁCTICOS", q:"¿Qué demuestra el caso de Cemaco respecto a los medios digitales?", a:["Que no son necesarios","Que mejoran la experiencia cuando se usan correctamente","Que solo sirven para grandes empresas","Que reemplazan al servicio físico"], ok:1},
+    {nivel:"🔴 NIVEL 3 – CASOS PRÁCTICOS", q:"¿Qué problema mostró LATAM en su experiencia digital durante la pandemia?", a:["Exceso de tiendas físicas","Digitalización sin estrategia centrada en el cliente","Falta de redes sociales","Poca publicidad"], ok:1},
+    {nivel:"🔴 NIVEL 3 – CASOS PRÁCTICOS", q:"¿Cuál fue un error clave en el caso LATAM desde la experiencia del cliente?", a:["Uso de tecnología avanzada","Atención clara y empática","Automatización excesiva sin enfoque humano","Integración correcta de canales"], ok:2},
+
+    {nivel:"🏆 JEFE FINAL", q:"¿Cuál es la conclusión más correcta sobre los medios digitales y la experiencia del cliente?", a:["La tecnología lo resuelve todo","La experiencia depende solo del cliente","La experiencia depende de una estrategia digital bien gestionada y centrada en las personas","Lo digital elimina la necesidad de atención humana"], ok:2},
   ];
 
-  let levelIdx = 0;
-  let qIdx = 0;
-  let lives = 3;
+  let hearts = 5;
   let score = 0;
+  let i = 0;
+  let locked = false;
 
-  const $ = (id)=>document.getElementById(id);
+  function render(){
+    const q = quiz[i];
+    $("nTitle").textContent = q.nivel;
+    $("q").textContent = q.q;
+    $("hearts").textContent = "❤️".repeat(hearts) + "🖤".repeat(Math.max(0,5-hearts));
+    $("score").textContent = "Puntos: " + score;
+    $("msg").innerHTML = "Elige una opción";
 
-  function renderHUD(){
-    $("nivelPill").textContent = `Nivel ${levelIdx+1}`;
-    $("vidasPill").textContent = "❤️".repeat(lives) + "🖤".repeat(Math.max(0,3-lives));
-    $("scorePill").textContent = `Puntos: ${score}`;
-  }
-
-  function showQuestion(){
-    renderHUD();
-    const L = levels[levelIdx];
-    const Q = L.qs[qIdx];
-
-    $("bossLine").textContent = L.boss;
-    $("qText").textContent = Q.q;
-    $("qSub").textContent = "Elige una opción";
-    $("msg").textContent = "";
-
-    $("opts").innerHTML = Q.a.map((txt,i)=>`
-      <div class="opt" data-i="${i}">
-        <b>${String.fromCharCode(65+i)}.</b> ${txt}
+    $("opts").innerHTML = q.a.map((t,idx)=>`
+      <div class="opt" data-idx="${idx}">
+        <b>${String.fromCharCode(65+idx)}.</b> ${esc(t)}
       </div>
     `).join("");
 
-    [...document.querySelectorAll(".opt")].forEach(el=>{
-      el.addEventListener("click", ()=>pick(parseInt(el.dataset.i,10)));
+    document.querySelectorAll(".opt").forEach(el=>{
+      el.onclick=()=>pick(Number(el.dataset.idx));
     });
   }
 
-  function pick(i){
-    const L = levels[levelIdx];
-    const Q = L.qs[qIdx];
+  async function pick(ans){
+    if(locked) return;
+    locked = true;
 
-    if(i === Q.ok){
+    const q = quiz[i];
+    const ok = (ans === q.ok);
+
+    if(ok){
       score += 10;
-      $("msg").innerHTML = "✅ Correcto. ¡Sigue!";
+      $("msg").innerHTML = `<span class="ok">✅ Correcto</span> (+10)`;
     }else{
-      lives -= 1;
-      $("msg").innerHTML = `<span class="danger">❌ Incorrecto.</span> Te queda(n) ${lives} vida(s).`;
+      hearts -= 1; // “media vida” aquí equivale a 1 corazón (tienes 5)
+      $("msg").innerHTML = `<span class="danger">❌ Incorrecto</span> (-1 corazón)`;
     }
 
-    renderHUD();
+    // guarda en RTDB (por si quieres ver avance)
+    if(playerId){
+      await updatePlayer(playerId, { hearts, score, qIndex: i, finished: false });
+    }
 
-    setTimeout(()=>{
-      if(lives <= 0){
-        end(false);
+    setTimeout(async ()=>{
+      if(hearts <= 0){
+        await lose();
         return;
       }
-      qIdx++;
-      if(qIdx >= L.qs.length){
-        levelIdx++;
-        qIdx = 0;
-        if(levelIdx >= levels.length){
-          end(true);
-          return;
-        }
+      i++;
+      if(i >= quiz.length){
+        await win();
+        return;
       }
-      showQuestion();
-    }, 900);
+      locked = false;
+      render();
+    }, 800);
   }
 
-  function end(win){
-    $("gameCard").style.display = "none";
-    $("endCard").style.display = "block";
-    $("endTitle").textContent = win ? "🏆 ¡Ganaste!" : "💀 Game Over";
-    $("endText").innerHTML = win
-      ? `La Licda: “¡Excelente! Te espero en mi próximo curso 😌🔥”<br><br><b>Puntos:</b> ${score}`
-      : `La Licda: “Hoy no se pudo… pero mañana sí 😌”<br><br><b>Puntos:</b> ${score}`;
+  async function lose(){
+    $("game").style.display="none";
+    $("end").style.display="block";
+    $("endTitle").textContent = "💀 Te quedaste sin corazones";
+    $("endText").innerHTML = `
+      <b>Jefe (traje gris):</b> “Sigue estudiando, suerte para el siguiente curso.”<br>
+      <b>Licda:</b> “En la próxima lo lograrás, no te desanimes.” 🐶🐶🐶🐶🐶
+      <br><br><b>Puntos:</b> ${score}
+    `;
+    if(playerId) await updatePlayer(playerId, { hearts:0, score, finished:true });
+    await pushEvent(`😵 ${nombre} se quedó sin corazones.`);
+    // también lo subimos al ranking (aunque pierda)
+    await submitLeaderboard(playerId || (Date.now()+""), nombre, score);
   }
 
-  $("btnAgain").addEventListener("click", ()=>{
-    window.location.href = "./index.html";
-  });
+  async function win(){
+    $("game").style.display="none";
+    $("end").style.display="block";
+    $("endTitle").textContent = "🏆 ¡Ganaste!";
+    $("endText").innerHTML = `
+      <b>Licda:</b> “¡Excelente! Felicidades.” 🐶🐶🐶🐶🐶<br>
+      🎉 Confeti para 1er lugar 🎉<br><br><b>Puntos:</b> ${score}
+    `;
+    if(playerId) await updatePlayer(playerId, { hearts, score, finished:true });
+    await pushEvent(`🏆 ${nombre} terminó el juego con ${score} puntos.`);
+    await submitLeaderboard(playerId || (Date.now()+""), nombre, score);
+  }
 
-  // Si alguien entra directo sin lobby, lo dejamos jugar igual
-  $("playerName").textContent = sessionStorage.getItem("vd_playerName") || "Estudiante";
-  $("playerMeta").textContent = "Modo juego en vivo";
-
-  showQuestion();
+  render();
 </script>
 </body>
 </html>
-
