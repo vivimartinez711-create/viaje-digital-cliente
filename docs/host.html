@@ -1,158 +1,152 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="utf-8"/>
-  <meta name="viewport" content="width=device-width,initial-scale=1"/>
-  <title>Host — El Viaje Digital del Cliente</title>
+  <meta charset="UTF-8" />
+  <title>Panel Host - Viaje Digital</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <style>
-    body{margin:0;font-family:Segoe UI,system-ui;background:radial-gradient(circle at top,#0f1b33,#070b14);color:#fff}
-    .wrap{max-width:1100px;margin:18px auto;padding:0 14px}
-    h1{margin:8px 0 6px}
-    .sub{margin:0 0 14px;opacity:.85}
-    .grid{display:grid;grid-template-columns:420px 1fr;gap:14px}
-    @media(max-width:980px){.grid{grid-template-columns:1fr}}
-    .card{background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.12);border-radius:18px;padding:14px;box-shadow:0 18px 55px rgba(0,0,0,.45)}
-    input,button{width:100%;padding:12px 14px;border-radius:14px;border:1px solid rgba(255,255,255,.18);box-sizing:border-box;font-size:16px}
+    body{margin:0;font-family:"Segoe UI",sans-serif;background:radial-gradient(circle at 30% 10%,#223b6e,#0b1020);color:#eaf0ff}
+    .wrap{max-width:980px;margin:28px auto;padding:0 16px}
+    h1{margin:0 0 6px}
+    .muted{opacity:.85}
+    .card{margin-top:16px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.10);border-radius:18px;padding:16px}
+    input,button{width:100%;padding:12px;border-radius:12px;border:1px solid rgba(255,255,255,.20);font-size:1em}
     input{background:rgba(0,0,0,.25);color:#fff}
-    button{border:none;background:#2f6df6;color:#fff;font-weight:900;cursor:pointer}
-    button:hover{filter:brightness(1.06)}
-    .btn2{background:#16a34a}
-    .btn3{background:#ef4444}
-    .row{display:flex;gap:10px;flex-wrap:wrap}
-    .row button{flex:1;min-width:160px}
-    .list{background:rgba(0,0,0,.25);border:1px solid rgba(255,255,255,.12);border-radius:14px;padding:12px;min-height:220px;white-space:pre-line;line-height:1.65;font-size:14px}
-    .pill{display:inline-block;background:#22c55e;color:#02110a;font-weight:900;padding:6px 10px;border-radius:999px;margin-right:8px}
-    .pill2{background:#0ea5e9;color:#001019}
-    .muted{opacity:.85;font-size:13px}
+    button{background:#2f6df6;color:#fff;font-weight:900;border:none;cursor:pointer}
+    button:hover{background:#2457c6}
+    .row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+    @media(max-width:900px){.row{grid-template-columns:1fr}}
+    .pill{display:inline-block;padding:7px 12px;border-radius:999px;font-weight:900;font-size:.92em;background:rgba(255,255,255,.12)}
+    .box{background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.10);border-radius:14px;padding:12px}
+    ul{margin:8px 0 0 18px}
+    .danger{background:#ff3b3b}
+    .danger:hover{background:#d12f2f}
+    .ghost{background:rgba(255,255,255,.12)}
+    .ghost:hover{background:rgba(255,255,255,.18)}
+    a{color:#a8c6ff}
   </style>
 </head>
 <body>
   <div class="wrap">
     <h1>👩‍🏫 Panel Host (Licda = tú)</h1>
-    <p class="sub">Control en vivo — iniciar, pasar preguntas, finalizar y mostrar podio</p>
+    <div class="muted">Control en vivo — El Viaje Digital del Cliente</div>
 
-    <div class="grid">
-      <div class="card">
-        <div class="row">
-          <div style="flex:1">
-            <div class="muted">PIN</div>
-            <input id="pin" placeholder="2026" value="2026"/>
+    <div class="card" id="loginCard">
+      <div class="row">
+        <div>
+          <div class="pill">🔒 Acceso</div>
+          <div style="margin-top:10px" class="muted">PIN</div>
+          <input id="pin" placeholder="PIN (2026)" />
+        </div>
+        <div style="display:flex;align-items:end">
+          <button id="btnEntrar">Entrar</button>
+        </div>
+      </div>
+      <div class="muted" style="margin-top:10px">Tip: si no te deja, prueba en incógnito.</div>
+    </div>
+
+    <div class="card" id="panelCard" style="display:none">
+      <div class="row">
+        <div class="box">
+          <div class="pill" id="fasePill">Fase: Lobby</div>
+          <div style="margin-top:10px" class="muted">Conectados:</div>
+          <div style="font-size:28px;font-weight:900" id="count">0</div>
+          <div class="muted">Lobby: <a href="./index.html" target="_blank">abrir</a></div>
+        </div>
+
+        <div class="box">
+          <div class="pill">🎮 Controles</div>
+          <div style="margin-top:10px" class="row">
+            <button id="btnStart">▶ Iniciar Juego</button>
+            <button id="btnLobby" class="ghost">↩ Volver a Lobby</button>
+            <button id="btnReset" class="danger">🧨 Reset total</button>
+          </div>
+          <div class="muted" style="margin-top:10px">
+            “Iniciar Juego” manda a todos a <b>juego.html</b> automáticamente.
           </div>
         </div>
-
-        <div style="height:10px"></div>
-
-        <div class="row">
-          <button id="btnLogin" class="btn2">Entrar</button>
-          <button id="btnStart" disabled>🚀 Iniciar Juego</button>
-        </div>
-        <div class="row" style="margin-top:10px">
-          <button id="btnNext" disabled class="btn2">➡️ Siguiente Pregunta</button>
-          <button id="btnEnd" disabled class="btn3">🏁 Finalizar</button>
-        </div>
-        <div class="row" style="margin-top:10px">
-          <button id="btnReset" disabled class="btn3">🧹 Reset Total</button>
-        </div>
-
-        <p class="muted" style="margin-top:12px">
-          ✅ “Iniciar” manda automáticamente a todos a <b>juego.html</b><br>
-          ✅ “Siguiente” cambia de salón (día → tarde → noche → jefe final)
-        </p>
-
-        <div style="margin-top:10px">
-          <span class="pill2" id="statePill">estado: …</span>
-          <span class="pill" id="qPill">pregunta: …</span>
-        </div>
-
-        <div class="list" id="log" style="margin-top:10px">Esperando…</div>
       </div>
 
-      <div class="card">
-        <h3 style="margin:0 0 8px">👥 Jugadores</h3>
-        <div class="list" id="playersBox">Cargando…</div>
+      <div class="row" style="margin-top:12px">
+        <div class="box">
+          <div class="pill">🏫 Lista (salón)</div>
+          <div id="lista" class="muted" style="margin-top:8px">Cargando…</div>
+        </div>
+        <div class="box">
+          <div class="pill">📣 Eventos</div>
+          <div id="eventos" class="muted" style="margin-top:8px">—</div>
+        </div>
       </div>
     </div>
   </div>
 
-  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
-  <script src="./firebase.js"></script>
+<script type="module">
+  import {
+    hostEnsureDefaults, hostListen, hostStartGame, hostBackToLobby, hostResetAll,
+    lobbyListen, pushEvent, eventsListen
+  } from "./firebase.js";
 
-  <script>
-    const PIN_OK="2026";
-    const $=id=>document.getElementById(id);
-    const logBox=$("log"), playersBox=$("playersBox");
-    const btnLogin=$("btnLogin"), btnStart=$("btnStart"), btnNext=$("btnNext"), btnEnd=$("btnEnd"), btnReset=$("btnReset");
+  const $ = (id)=>document.getElementById(id);
 
-    function log(t){ logBox.textContent = t; }
+  await hostEnsureDefaults();
 
-    btnLogin.onclick=()=>{
-      const p=$("pin").value.trim();
-      if(p!==PIN_OK){ log("❌ PIN incorrecto"); return; }
-      btnStart.disabled=false; btnNext.disabled=false; btnEnd.disabled=false; btnReset.disabled=false;
-      log("✅ Host habilitado.");
-    };
+  function escapeHtml(s){
+    return (s||"").replaceAll("&","&amp;").replaceAll("<","&lt;").replaceAll(">","&gt;");
+  }
 
-    // Estado inicial
-    async function setState(obj){ await DB.ref("game/state").set(obj); }
+  function renderLobby(obj){
+    const count = obj ? Object.keys(obj).length : 0;
+    $("count").textContent = count;
 
-    btnStart.onclick=async ()=>{
-      await setState({ status:"playing", qIndex:0, startedAt:Date.now() });
-      await DB.ref("game/event").set({ ts:Date.now(), text:"🎒 Todos ingresan al salón. ¡Inicia la batalla!" });
-      log("🚀 Juego iniciado (qIndex=0).");
-      location.href="./juego.html"; // también te manda a ti
-    };
+    if(!obj){ $("lista").innerHTML = "—"; return; }
+    const arr = Object.values(obj).filter(Boolean).slice(-35).reverse();
+    $("lista").innerHTML = `<ul>${arr.map(x=>{
+      const tag = x.status === "salio" ? " — salió" : "";
+      return `<li>${escapeHtml(x.nombre||"")}${tag}</li>`;
+    }).join("")}</ul>`;
+  }
 
-    btnNext.onclick=async ()=>{
-      const snap = await DB.ref("game/state").get();
-      const st = snap.val() || {status:"playing", qIndex:0};
-      const next = (st.qIndex||0) + 1;
-      await setState({ status:"playing", qIndex: next, startedAt: st.startedAt || Date.now() });
-      await DB.ref("game/event").set({ ts:Date.now(), text:`🏫 Cambio de salón: pregunta ${next+1}` });
-      log(`➡️ Avanzaste a pregunta ${next}.`);
-    };
+  function renderEventos(obj){
+    if(!obj){ $("eventos").innerHTML = "—"; return; }
+    const arr = Object.values(obj).filter(Boolean).slice(-8).reverse();
+    $("eventos").innerHTML = `<ul>${arr.map(e=>`<li>${escapeHtml(e.texto||"")}</li>`).join("")}</ul>`;
+  }
 
-    btnEnd.onclick=async ()=>{
-      // calcula top 3
-      const ps = (await DB.ref("players").get()).val() || {};
-      const arr = Object.entries(ps).map(([id,p])=>({id,...p}))
-        .sort((a,b)=>(b.score||0)-(a.score||0));
-      const top3 = arr.slice(0,3).map(x=>({id:x.id,nombre:x.nombre,score:x.score||0}));
+  // listeners
+  lobbyListen(renderLobby);
+  eventsListen(renderEventos);
+  hostListen((h)=>{
+    const fase = (h && h.fase) ? h.fase : "lobby";
+    $("fasePill").textContent = "Fase: " + (fase.charAt(0).toUpperCase()+fase.slice(1));
+  });
 
-      await DB.ref("game/winners").set({ ts:Date.now(), top3 });
-      await setState({ status:"finished", qIndex: (await DB.ref("game/state/qIndex").get()).val() || 0, endedAt:Date.now() });
-      await DB.ref("game/event").set({ ts:Date.now(), text:"🏆 Fin del juego. La Licda felicita al primer lugar con sus perritos 🐶🐶🐶🐶🐶" });
-      log("🏁 Finalizado. Podio enviado.");
-    };
+  // login
+  $("btnEntrar").addEventListener("click", ()=>{
+    const pin = ($("pin").value || "").trim();
+    if(pin !== "2026"){ alert("PIN incorrecto"); return; }
+    $("loginCard").style.display = "none";
+    $("panelCard").style.display = "block";
+  });
 
-    btnReset.onclick=async ()=>{
-      await DB.ref("players").set(null);
-      await DB.ref("answers").set(null);
-      await DB.ref("game").set({ state:{ status:"lobby", qIndex:0, resetAt:Date.now() } });
-      log("🧹 Reset total hecho.");
-    };
+  // controles
+  $("btnStart").addEventListener("click", async ()=>{
+    await pushEvent("🚀 La Licda inició el juego. ¡Todos a jugar!");
+    await hostStartGame();
+    alert("Listo: se inició el juego.");
+  });
 
-    // Ver estado en vivo
-    DB.ref("game/state").on("value",(snap)=>{
-      const s=snap.val()||{};
-      $("statePill").textContent = "estado: " + (s.status||"lobby");
-      $("qPill").textContent = "pregunta: " + (s.qIndex ?? 0);
-    });
+  $("btnLobby").addEventListener("click", async ()=>{
+    await pushEvent("↩ La Licda reinició a Lobby.");
+    await hostBackToLobby();
+  });
 
-    // Ver jugadores
-    function heartsText(half){
-      const full = Math.floor((half||0)/2);
-      const halfHeart = ((half||0)%2) ? "💗" : "";
-      return "❤️".repeat(full)+halfHeart;
-    }
-    DB.ref("players").on("value",(snap)=>{
-      const obj=snap.val()||{};
-      const arr=Object.entries(obj).map(([id,p])=>({id,...p}))
-        .sort((a,b)=>(b.score||0)-(a.score||0));
-      if(!arr.length){ playersBox.textContent="Aún no hay estudiantes…"; return; }
-      const lines=arr.map((p,i)=>`${i+1}) ${p.nombre} ${heartsText(p.heartsHalf)} | score=${p.score||0}${p.eliminado?" ❌":""}`);
-      playersBox.textContent=lines.join("\n");
-    });
-  </script>
+  $("btnReset").addEventListener("click", async ()=>{
+    const ok = confirm("¿Seguro? Esto borra lobby + eventos y reinicia todo.");
+    if(!ok) return;
+    await hostResetAll();
+    await pushEvent("🧨 Reset total hecho por la Licda.");
+    alert("Reset hecho.");
+  });
+</script>
 </body>
 </html>
