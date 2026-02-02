@@ -1,158 +1,204 @@
 <!doctype html>
 <html lang="es">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>El Viaje Digital del Cliente</title>
-  <style>
-    body{font-family:system-ui,Segoe UI,Arial;margin:0;background:linear-gradient(180deg,#bfe0ff,#f4f7ff);}
-    .wrap{max-width:980px;margin:24px auto;padding:16px;}
-    .card{background:#fff;border-radius:18px;box-shadow:0 10px 30px rgba(0,0,0,.12);padding:18px;}
-    h1{margin:0 0 6px;font-size:34px}
-    .sub{opacity:.7;margin:0 0 18px}
-    .grid{display:grid;grid-template-columns:1fr 1fr;gap:16px}
-    @media(max-width:900px){.grid{grid-template-columns:1fr}}
-    label{display:block;font-weight:700;margin:10px 0 6px}
-    input,select{width:100%;padding:12px 12px;border-radius:12px;border:1px solid #d0d7e2;font-size:16px}
-    .btn{margin-top:14px;width:100%;padding:14px;border:0;border-radius:12px;background:#0b56c1;color:#fff;font-size:18px;font-weight:800;cursor:pointer}
-    .pill{display:inline-block;padding:6px 10px;border-radius:999px;font-weight:800;color:#0a2b4a;margin-right:8px}
-    .pill.blue{background:#5bd0ff}
-    .pill.green{background:#41d37a}
-    .box{background:#f6f8fc;border:1px solid #e3e9f5;border-radius:14px;padding:12px}
-    .list{margin:8px 0 0;padding-left:18px}
-    .muted{opacity:.75}
-    .hearts{color:#ff2a67;font-weight:900}
-  </style>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>El Viaje Digital del Cliente — Entrada</title>
+<style>
+  body{margin:0;font-family:system-ui,Segoe UI,Arial;background:linear-gradient(180deg,#b3d9ff,#e6f2ff);min-height:100vh}
+  .wrap{max-width:980px;margin:0 auto;padding:18px}
+  .card{background:#fff;border-radius:18px;padding:16px;box-shadow:0 16px 40px rgba(0,0,0,.12)}
+  h1{margin:0 0 6px}
+  .muted{opacity:.75}
+  .row{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+  @media(max-width:780px){.row{grid-template-columns:1fr}}
+  label{display:block;font-weight:800;margin:10px 0 6px}
+  input,select{width:100%;padding:11px;border-radius:12px;border:1px solid #d7d7d7;font-size:16px}
+  button{width:100%;padding:12px;border-radius:12px;border:0;background:#004aad;color:#fff;font-weight:900;cursor:pointer}
+  button:hover{background:#00327a}
+  .arena{display:flex;flex-wrap:wrap;gap:10px;margin-top:12px}
+  .chip{width:160px;border-radius:16px;border:1px solid #e5e5e5;background:#fafafa;padding:10px}
+  .mini{height:46px;border-radius:12px;position:relative;background:#fff;border:1px solid #eee;overflow:hidden}
+  .hair{position:absolute;left:50px;top:7px;width:34px;height:12px;border-radius:12px}
+  .head{position:absolute;left:52px;top:11px;width:26px;height:26px;border-radius:999px}
+  .shirt{position:absolute;left:44px;top:27px;width:42px;height:16px;border-radius:10px}
+  .nm{font-weight:900;margin-top:8px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .meta{font-size:12px;opacity:.85}
+  .pill{display:inline-block;padding:6px 10px;border-radius:999px;background:#eef4ff;color:#0b3ea3;font-weight:900;margin:8px 0}
+</style>
 </head>
 <body>
-  <div class="wrap">
-    <div class="card">
-      <h1>🎓 El Viaje Digital del Cliente</h1>
-      <p class="sub">Batalla universitaria — todos juegan en vivo</p>
+<div class="wrap">
+  <div class="card">
+    <h1>🎓 El Viaje Digital del Cliente</h1>
+    <div class="muted">Entrada al juego (multijugador en vivo). Todos se verán en el salón.</div>
 
-      <div class="grid">
-        <!-- IZQ: FORM -->
-        <div>
-          <label>👤 Tu nombre</label>
-          <input id="name" placeholder="Ej: Vivi, Ana, Carlos" />
+    <div class="pill">Código de clase: <span id="roomTxt">CLASE1</span></div>
 
-          <label>🧑‍🎓 Personaje</label>
-          <select id="personaje">
-            <option>Mujer (lona + blusa 3/4)</option>
-            <option>Hombre (jean + camiseta)</option>
-            <option>Hombre (short + camisa)</option>
-          </select>
-
-          <label>🚌 ¿Cómo llegas a la U?</label>
-          <select id="transporte">
-            <option>Bus (gallinera)</option>
-            <option>A pie</option>
-            <option>Carro</option>
-            <option>Moto</option>
-          </select>
-
-          <label>🎨 Piel</label>
-          <select id="piel">
-            <option>Blanca</option>
-            <option>Morena clara</option>
-          </select>
-
-          <label>💇 Pelo</label>
-          <select id="pelo">
-            <option>Negro</option>
-            <option>Castaño</option>
-            <option>Rubio</option>
-          </select>
-
-          <label>👚 Color camisa/blusa</label>
-          <select id="blusa">
-            <option>Azul</option>
-            <option>Rosa</option>
-            <option>Negra</option>
-            <option>Blanca</option>
-          </select>
-
-          <button class="btn" id="btnJoin">Entrar a la Universidad</button>
-
-          <div class="box" style="margin-top:12px">
-            ⏳ <b>Esperando que la Licda inicie el juego...</b><br>
-            <span class="muted">Host (tú): abre <b>host.html</b> para iniciar / controlar.</span>
-          </div>
-        </div>
-
-        <!-- DER: LOBBY -->
-        <div>
-          <div style="margin-bottom:10px">
-            <span class="pill blue" id="phasePill">Fase: Lobby</span>
-            <span class="pill green" id="countPill">0 conectados</span>
-          </div>
-
-          <div class="box">
-            🏫 <b>Salón en vivo</b>
-            <div id="lobbyState" class="muted" style="margin-top:6px">Cargando...</div>
-            <ul id="lobbyList" class="list"></ul>
-          </div>
-
-          <div class="box" style="margin-top:12px">
-            📣 <b>Eventos (se ven para todos)</b>
-            <div id="eventsTxt" class="muted" style="margin-top:6px">Aún no hay eventos...</div>
-          </div>
-        </div>
+    <div class="row">
+      <div>
+        <label>Tu nombre</label>
+        <input id="name" placeholder="Ej: Ana, Carlos, Vivi">
+      </div>
+      <div>
+        <label>Género</label>
+        <select id="gender">
+          <option value="mujer">Mujer (lona + blusa 3/4)</option>
+          <option value="hombre">Hombre (jean + camisa)</option>
+        </select>
       </div>
     </div>
+
+    <div class="row">
+      <div>
+        <label>Piel</label>
+        <select id="skin">
+          <option value="#f3d7c5">Blanca</option>
+          <option value="#d2b49a">Morena clara</option>
+        </select>
+      </div>
+      <div>
+        <label>Pelo</label>
+        <select id="hair">
+          <option value="#1f1f1f">Negro</option>
+          <option value="#6a3f2b">Castaño</option>
+          <option value="#d7b55a">Rubio</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="row">
+      <div>
+        <label>Camisa / Blusa</label>
+        <select id="shirt">
+          <option value="#2f6fff">Azul</option>
+          <option value="#ff5c7c">Rosa</option>
+          <option value="#111111">Negra</option>
+          <option value="#ffffff">Blanca</option>
+        </select>
+      </div>
+      <div>
+        <label>¿Cómo llegas a la U?</label>
+        <select id="transport">
+          <option value="bus">🚌 Bus (gallinera)</option>
+          <option value="carro">🚗 Carro</option>
+          <option value="moto">🏍️ Moto</option>
+          <option value="pie">🚶 A pie</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="row">
+      <div>
+        <label>Código de clase (opcional)</label>
+        <input id="room" value="CLASE1">
+      </div>
+      <div>
+        <label>&nbsp;</label>
+        <button id="join">Entrar al salón</button>
+      </div>
+    </div>
+
+    <div class="muted" style="margin-top:10px">Salón en vivo (quiénes ya están conectados):</div>
+    <div class="arena" id="arena"></div>
+
+    <div class="muted" style="margin-top:10px">
+      Cuando entras, te manda automáticamente al juego.  
+      Si se queda “cargando”, abre en modo incógnito.
+    </div>
   </div>
+</div>
 
-  <script type="module">
-    import { joinLobby, listenLobby, listenPhase, listenEvents } from "./firebase.js";
+<script type="module">
+import { db, dbRef, dbSet, dbUpdate, dbOnValue, dbTs, qs, uid } from "./firebase.js";
 
-    const $ = (id) => document.getElementById(id);
+const roomInput = document.getElementById("room");
+const roomTxt = document.getElementById("roomTxt");
+const arena = document.getElementById("arena");
 
-    // UI listeners
-    listenLobby((players) => {
-      $("countPill").textContent = `${players.length} conectados`;
-      $("lobbyState").textContent = players.length ? "" : "Aún no se conecta nadie...";
-      $("lobbyList").innerHTML = players.map(p =>
-        `<li><b>${escapeHtml(p.name||"")}</b> <span class="hearts">♥ ♥ ♥ ♥ ♥</span></li>`
-      ).join("");
-    });
+function esc(s){return String(s).replace(/[&<>"']/g,c=>({ "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]))}
 
-    listenPhase((phase) => {
-      $("phasePill").textContent = `Fase: ${phase === "game" ? "Juego" : "Lobby"}`;
-      // ✅ si la fase pasa a game => manda a juego.html
-      if (phase === "game") window.location.href = "./juego.html";
-    });
+function renderPlayers(players){
+  const arr = Object.values(players || {});
+  arena.innerHTML = arr.map(p=>`
+    <div class="chip">
+      <div class="mini">
+        <div class="hair" style="background:${p.hair}"></div>
+        <div class="head" style="background:${p.skin}"></div>
+        <div class="shirt" style="background:${p.shirt};${p.shirt==="#ffffff"?"border:1px solid rgba(0,0,0,.12)":""}"></div>
+      </div>
+      <div class="nm">${p.gender==="mujer"?"👩‍🎓":"👨‍🎓"} ${esc(p.name)}</div>
+      <div class="meta">${esc(p.transportLabel)} · ♥♥♥♥♥</div>
+    </div>
+  `).join("");
+}
 
-    listenEvents((txt) => $("eventsTxt").textContent = txt);
+function transportLabel(v){
+  return v==="bus" ? "🚌 Bus (gallinera)" :
+         v==="carro" ? "🚗 Carro" :
+         v==="moto" ? "🏍️ Moto" : "🚶 A pie";
+}
 
-    // Join button
-    $("btnJoin").addEventListener("click", async () => {
-      const name = $("name").value.trim();
-      if (!name) return alert("Escribe tu nombre 😊");
+function watchLobby(room){
+  roomTxt.textContent = room;
+  const lobbyRef = dbRef(db, `rooms/${room}/players`);
+  dbOnValue(lobbyRef, snap => renderPlayers(snap.val()));
+}
 
-      $("btnJoin").disabled = true;
-      $("btnJoin").textContent = "Entrando...";
+const urlRoom = qs("room");
+if(urlRoom){ roomInput.value = urlRoom; }
+watchLobby(roomInput.value.trim() || "CLASE1");
 
-      try {
-        await joinLobby({
-          name,
-          personaje: $("personaje").value,
-          transporte: $("transporte").value,
-          piel: $("piel").value,
-          pelo: $("pelo").value,
-          blusa: $("blusa").value
-        });
-        $("btnJoin").textContent = "¡Listo! Espera a la Licda...";
-      } catch (e) {
-        console.error(e);
-        alert("No se pudo entrar. Revisa Rules de Firebase (read/write true).");
-        $("btnJoin").disabled = false;
-        $("btnJoin").textContent = "Entrar a la Universidad";
-      }
-    });
+roomInput.addEventListener("input", ()=> watchLobby(roomInput.value.trim()||"CLASE1"));
 
-    function escapeHtml(s){
-      return s.replace(/[&<>"']/g, (c)=>({ "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;" }[c]));
-    }
-  </script>
+document.getElementById("join").onclick = async ()=>{
+  const room = roomInput.value.trim() || "CLASE1";
+  const name = document.getElementById("name").value.trim();
+  if(!name) return alert("Escribe tu nombre 😊");
+
+  const playerId = uid();
+  const gender = document.getElementById("gender").value;
+  const skin = document.getElementById("skin").value;
+  const hair = document.getElementById("hair").value;
+  const shirt = document.getElementById("shirt").value;
+  const transport = document.getElementById("transport").value;
+
+  // crear room si no existe (estado inicial)
+  await dbUpdate(dbRef(db, `rooms/${room}`), {
+    state: "lobby",
+    level: 1,
+    timeOfDay: "mañana",
+    qIndex: 0,
+    paused: false,
+    pauseText: "",
+    updatedAt: dbTs()
+  });
+
+  // registrar jugador
+  await dbSet(dbRef(db, `rooms/${room}/players/${playerId}`), {
+    id: playerId,
+    name,
+    gender,
+    skin,
+    hair,
+    shirt,
+    transport,
+    transportLabel: transportLabel(transport),
+    lives: 5,
+    score: 0,
+    out: false,
+    answered: false,
+    lastAnswer: null,
+    joinedAt: Date.now()
+  });
+
+  // guardar en navegador
+  localStorage.setItem("vdc_room", room);
+  localStorage.setItem("vdc_playerId", playerId);
+
+  // ir al juego
+  location.href = `juego.html?room=${encodeURIComponent(room)}`;
+};
+</script>
 </body>
 </html>
