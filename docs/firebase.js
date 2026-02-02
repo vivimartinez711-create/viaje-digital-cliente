@@ -1,19 +1,9 @@
-import { initializeApp } from "https://www.gstatic.com/firebasejs/12.8.0/firebase-app.js";
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-app.js";
 import {
-  getDatabase,
-  ref,
-  set,
-  update,
-  push,
-  onValue,
-  onChildAdded,
-  onChildChanged,
-  onChildRemoved,
-  serverTimestamp,
-  remove,
-  get
-} from "https://www.gstatic.com/firebasejs/12.8.0/firebase-database.js";
+  getDatabase, ref, set, update, onValue, push, remove, serverTimestamp
+} from "https://www.gstatic.com/firebasejs/10.12.5/firebase-database.js";
 
+// ✅ TU CONFIG (la que me pegaste)
 const firebaseConfig = {
   apiKey: "AIzaSyD5Rx36FYLIi3nw09exLZrg3yU241DQ5gI",
   authDomain: "u07059.firebaseapp.com",
@@ -25,189 +15,89 @@ const firebaseConfig = {
   measurementId: "G-PK5WL6ZX0C"
 };
 
-// Init
 const app = initializeApp(firebaseConfig);
 const db = getDatabase(app);
 
-// =====================
-// Helpers / Paths
-// =====================
-const ROOT = "viaje_digital";         // carpeta base en tu RTDB
-const lobbyPath = `${ROOT}/lobby`;    // alumnos conectados
-const hostPath  = `${ROOT}/host`;     // control del host (fase, start, etc.)
-const eventsPath = `${ROOT}/eventos`; // eventos para todos
+// Rutas en RTDB
+const HOST_PATH = "viajeDigital/host";
+const LOBBY_PATH = "viajeDigital/lobby";
+const EVENTS_PATH = "viajeDigital/events";
 
-function cleanName(s) {
-  return (s || "").toString().trim().slice(0, 40);
-}
-
-function nowId() {
-  return `${Date.now()}_${Math.random().toString(16).slice(2)}`;
-}
-
-// =====================
-// LOBBY (alumnos)
-// =====================
-
-/**
- * Crea/actualiza un alumno como "conectado" en el lobby.
- * Devuelve: { id, refPath }
- */
-export async function lobbyJoin(data) {
-  const nombre = cleanName(data?.nombre);
-  if (!nombre) throw new Error("Nombre requerido");
-
-  const id = data?.id || nowId();
-  const r = ref(db, `${lobbyPath}/${id}`);
-
-  const payload = {
-    nombre,
-    personaje: data?.personaje || "",
-    transporte: data?.transporte || "",
-    piel: data?.piel || "",
-    pelo: data?.pelo || "",
-    ropa: data?.ropa || "",
-    status: "online",
-    joinedAt: serverTimestamp(),
-    lastSeen: serverTimestamp()
-  };
-
-  await set(r, payload);
-  return { id, refPath: `${lobbyPath}/${id}` };
-}
-
-/**
- * Marca actividad (para que no se vea como muerto)
- */
-export async function lobbyPing(id) {
-  if (!id) return;
-  await update(ref(db, `${lobbyPath}/${id}`), {
-    lastSeen: serverTimestamp(),
-    status: "online"
-  });
-}
-
-/**
- * Marca salida del alumno (no lo borra, solo status)
- */
-export async function lobbyLeave(id) {
-  if (!id) return;
-  await update(ref(db, `${lobbyPath}/${id}`), {
-    status: "salio",
-    leftAt: serverTimestamp()
-  });
-}
-
-/**
- * Escucha la lista completa del lobby.
- * callback recibe: (obj) donde obj = {id: {datos...}, ...} o null
- */
-export function lobbyListen(callback) {
-  const r = ref(db, lobbyPath);
-  return onValue(r, (snap) => callback(snap.val()));
-}
-
-// =====================
-// HOST CONTROL (fase / start / etc.)
-// =====================
-
-/**
- * Inicializa estado host si no existe.
- */
+// ---------------- HOST ----------------
 export async function hostEnsureDefaults() {
-  const r = ref(db, hostPath);
-  const snap = await get(r);
-  if (!snap.exists()) {
-    await set(r, {
-      fase: "lobby",        // lobby | juego | fin
-      start: false,
-      pin: "2026",
-      updatedAt: serverTimestamp()
-    });
-  }
-}
-
-/**
- * Lee estado del host en vivo.
- */
-export function hostListen(callback) {
-  const r = ref(db, hostPath);
-  return onValue(r, (snap) => callback(snap.val()));
-}
-
-/**
- * Cambia la fase (ej: "lobby" o "juego")
- */
-export async function hostSetFase(fase) {
-  await update(ref(db, hostPath), {
-    fase,
+  const r = ref(db, HOST_PATH);
+  // set por defecto SOLO si no existe: lo hacemos con update suave
+  await update(r, {
+    fase: "lobby",
+    start: false,
     updatedAt: serverTimestamp()
   });
 }
 
-/**
- * Inicia el juego (esto es lo que hace que los alumnos pasen a juego.html)
- */
+export function hostListen(cb) {
+  onValue(ref(db, HOST_PATH), (snap) => cb(snap.val()), (err) => console.error("hostListen", err));
+}
+
 export async function hostStartGame() {
-  await update(ref(db, hostPath), {
+  await update(ref(db, HOST_PATH), {
     fase: "juego",
     start: true,
-    startedAt: serverTimestamp(),
     updatedAt: serverTimestamp()
   });
 }
 
-/**
- * Regresa a lobby (para reiniciar)
- */
 export async function hostBackToLobby() {
-  await update(ref(db, hostPath), {
+  await update(ref(db, HOST_PATH), {
     fase: "lobby",
     start: false,
     updatedAt: serverTimestamp()
   });
 }
 
-/**
- * Resetea TODO (lobby + eventos + host a lobby)
- */
 export async function hostResetAll() {
-  // borra lista lobby y eventos
-  await remove(ref(db, lobbyPath));
-  await remove(ref(db, eventsPath));
-
-  // reinicia host
-  await set(ref(db, hostPath), {
+  await remove(ref(db, LOBBY_PATH));
+  await remove(ref(db, EVENTS_PATH));
+  await set(ref(db, HOST_PATH), {
     fase: "lobby",
     start: false,
-    pin: "2026",
     updatedAt: serverTimestamp()
   });
 }
 
-// =====================
-// EVENTOS (para todos)
-// =====================
+// --------------- LOBBY (alumnos) ---------------
+export async function lobbyJoin(player) {
+  const id = player.id;
+  if (!id) throw new Error("player.id requerido");
 
-/**
- * Crea un evento visible para todos (ej: "La Licda inició el juego")
- */
-export async function pushEvent(texto) {
-  const t = (texto || "").toString().trim().slice(0, 120);
-  if (!t) return;
-
-  await push(ref(db, eventsPath), {
-    texto: t,
-    at: serverTimestamp()
+  await set(ref(db, `${LOBBY_PATH}/${id}`), {
+    ...player,
+    status: "activo",
+    joinedAt: Date.now(),
+    lastSeen: Date.now()
   });
 }
 
-/**
- * Escucha eventos (últimos)
- */
-export function eventsListen(callback) {
-  return onValue(ref(db, eventsPath), (snap) => callback(snap.val()));
+export async function lobbyPing(id) {
+  if (!id) return;
+  await update(ref(db, `${LOBBY_PATH}/${id}`), { lastSeen: Date.now(), status: "activo" });
 }
 
-// Export db por si algún archivo lo necesita
-export { db, ref };
+export async function lobbyLeave(id) {
+  if (!id) return;
+  await update(ref(db, `${LOBBY_PATH}/${id}`), { status: "salio", lastSeen: Date.now() });
+}
+
+export function lobbyListen(cb) {
+  onValue(ref(db, LOBBY_PATH), (snap) => cb(snap.val()), (err) => console.error("lobbyListen", err));
+}
+
+// --------------- EVENTOS ---------------
+export async function pushEvent(texto) {
+  const r = push(ref(db, EVENTS_PATH));
+  await set(r, { texto, ts: Date.now() });
+}
+
+export function eventsListen(cb) {
+  onValue(ref(db, EVENTS_PATH), (snap) => cb(snap.val()), (err) => console.error("eventsListen", err));
+}
+
