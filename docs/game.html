@@ -3,16 +3,13 @@
 <head>
 <meta charset="utf-8"/>
 <meta name="viewport" content="width=device-width,initial-scale=1"/>
-<title>El Viaje Digital del Cliente — Juego en vivo</title>
+<title>El Viaje Digital del Cliente — Juego</title>
 <style>
-  :root{--card:rgba(255,255,255,.12);--border:rgba(255,255,255,.18);--txt:#fff}
-  body{margin:0;font-family:system-ui,Segoe UI,Arial;color:var(--txt);min-height:100vh;background:linear-gradient(180deg,#0b56c1,#071a35)}
-  .wrap{max-width:1200px;margin:0 auto;padding:14px}
+  body{margin:0;font-family:system-ui,Segoe UI,Arial;color:#fff;min-height:100vh;background:linear-gradient(180deg,#0b56c1,#071a35)}
+  .wrap{max-width:980px;margin:0 auto;padding:14px}
   .top{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin:10px 0 12px}
-  .pill{padding:6px 10px;border-radius:999px;background:rgba(255,255,255,.14);border:1px solid var(--border);font-weight:900}
-  .grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
-  @media(max-width:980px){.grid{grid-template-columns:1fr}}
-  .card{background:var(--card);border:1px solid var(--border);border-radius:18px;padding:14px;box-shadow:0 20px 45px rgba(0,0,0,.35)}
+  .pill{padding:6px 10px;border-radius:999px;background:rgba(255,255,255,.14);border:1px solid rgba(255,255,255,.18);font-weight:900}
+  .card{background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.18);border-radius:18px;padding:14px;box-shadow:0 20px 45px rgba(0,0,0,.35)}
   .q{font-size:20px;font-weight:900;margin:4px 0 8px}
   .muted{opacity:.85}
   .opts{display:grid;gap:8px;margin-top:10px}
@@ -21,205 +18,152 @@
   button[disabled]{opacity:.55;cursor:not-allowed}
   .msg{margin-top:10px;font-weight:900}
   .good{color:#39d98a} .bad{color:#ff4d6d}
-  .arena{display:flex;flex-wrap:wrap;gap:10px}
-  .chip{width:160px;border-radius:16px;border:1px solid rgba(255,255,255,.18);background:rgba(255,255,255,.08);padding:10px}
-  .mini{height:46px;border-radius:12px;position:relative;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.12);overflow:hidden}
-  .hair{position:absolute;left:50px;top:7px;width:34px;height:12px;border-radius:12px}
-  .head{position:absolute;left:52px;top:11px;width:26px;height:26px;border-radius:999px}
-  .shirt{position:absolute;left:44px;top:27px;width:42px;height:16px;border-radius:10px}
-  .nm{font-weight:900;margin-top:8px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-  .meta{font-size:12px;opacity:.88}
   .hearts{color:#ff2a67;letter-spacing:1px}
   .overlay{position:fixed;inset:0;display:none;align-items:center;justify-content:center;background:rgba(0,0,0,.78);padding:18px;z-index:999}
   .box{max-width:780px;background:#111827;border:1px solid rgba(255,255,255,.18);border-radius:18px;padding:18px;text-align:center}
-  .big{font-size:20px;font-weight:900}
   .conf{font-size:34px;letter-spacing:2px}
 </style>
 </head>
 <body>
 <div class="wrap">
   <div class="top">
-    <span class="pill" id="roomPill">Código: —</span>
-    <span class="pill" id="levelPill">Nivel: —</span>
-    <span class="pill" id="statePill">Estado: —</span>
-    <span class="pill" id="mePill">Yo: —</span>
+    <span class="pill" id="salon">🏫 Salón 1 — Mañana</span>
+    <span class="pill" id="nivel">Nivel 1</span>
+    <span class="pill" id="vidas">Vidas: ♥♥♥♥♥</span>
+    <span class="pill" id="puntos">Puntos: 0</span>
   </div>
 
-  <div class="grid">
-    <div class="card">
-      <div class="q" id="question">Esperando a la host…</div>
-      <div class="muted" id="sub">Cuando la host inicie, aparecerán preguntas por nivel.</div>
-      <div class="opts" id="opts"></div>
-      <div class="msg" id="msg"></div>
-      <div class="muted" style="margin-top:10px">
-        Regla: si fallas, pierdes la mitad de tus corazones (5→2→1→0). Con 0, quedas fuera.
-      </div>
-    </div>
-
-    <div class="card">
-      <div class="q">🏫 Salón en vivo</div>
-      <div class="muted">Todos conectados (se actualiza en tiempo real).</div>
-      <div class="arena" id="arena"></div>
-    </div>
+  <div class="card">
+    <div class="q" id="question">—</div>
+    <div class="muted" id="sub">—</div>
+    <div class="opts" id="opts"></div>
+    <div class="msg" id="msg"></div>
   </div>
 </div>
 
 <div class="overlay" id="ov">
   <div class="box">
     <div class="conf" id="conf">🎓</div>
-    <div class="big" id="ovTitle">Pausa</div>
-    <div class="muted" id="ovText">—</div>
+    <div style="font-size:20px;font-weight:900" id="ovTitle">Pausa</div>
+    <div class="muted" id="ovText" style="margin-top:8px;line-height:1.6">—</div>
+    <button id="close" style="margin-top:12px">Continuar</button>
   </div>
 </div>
 
-<script type="module">
-import { db, dbRef, dbOnValue, dbUpdate, dbGet, qs } from "./firebase.js";
+<script>
+  const player = JSON.parse(localStorage.getItem("VDC_PLAYER") || "null");
+  if(!player){ location.href="index.html"; }
 
-const room = qs("room") || localStorage.getItem("vdc_room") || "CLASE1";
-const playerId = localStorage.getItem("vdc_playerId");
+  const QUESTIONS = [
+    // NIVEL 1 (mañana) — 3
+    {level:1,time:"mañana",q:"¿Qué es la experiencia del cliente?", a:["El precio que paga","La publicidad","La percepción total en todas sus interacciones","Solo el postventa"], c:2},
+    {level:1,time:"mañana",q:"¿En qué momento se construye la experiencia del cliente?", a:["Solo cuando compra","Solo cuando hay problema","Antes, durante y después de la compra","Al final"], c:2},
+    {level:1,time:"mañana",q:"Rol principal de medios digitales:", a:["Reemplazar personas","Solo publicidad","Facilitar interacción y servicio","Solo reducir costos"], c:2},
 
-document.getElementById("roomPill").textContent = `Código: ${room}`;
+    // NIVEL 2 (tarde) — 4
+    {level:2,time:"tarde",q:"Objetivo de estrategia digital centrada en cliente:", a:["Usar más plataformas","Reducir fricciones y generar valor","Automatizar todo","Solo redes"], c:1},
+    {level:2,time:"tarde",q:"Clave para buena estrategia digital:", a:["Canales separados","Solo un canal","Integración coherente","Solo tecnología"], c:2},
+    {level:2,time:"tarde",q:"¿Qué mejora la experiencia digital?", a:["No escuchar al cliente","Conocer necesidades y expectativas","Copiar a la competencia","Cambiar el logo"], c:1},
+    {level:2,time:"tarde",q:"Enfoque humano importa porque:", a:["Tecnología limitada","Reduce costos","Detrás hay una persona","Lo digital no funciona"], c:2},
 
-const QUESTIONS = [
-  // NIVEL 1 (mañana) — 4 preguntas
-  { level:1, time:"mañana", q:"¿Qué es la experiencia del cliente?", a:["El precio que paga","La publicidad","La percepción total en todas sus interacciones","Solo el postventa"], correct:2 },
-  { level:1, time:"mañana", q:"¿En qué momento se construye la experiencia del cliente?", a:["Solo cuando compra","Solo cuando hay problema","Antes, durante y después","Al final"], correct:2 },
-  { level:1, time:"mañana", q:"Rol de medios digitales en la experiencia:", a:["Reemplazar personas","Solo publicidad","Facilitar interacción y servicio","Solo reducir costos"], correct:2 },
-  { level:1, time:"mañana", q:"La tecnología debe verse como:", a:["Un fin","Un gasto","Un habilitador de la experiencia","Un reemplazo humano total"], correct:2 },
+    // NIVEL 3 (noche) — 3
+    {level:3,time:"noche",q:"¿Qué hace bien Amazon en su experiencia digital?", a:["Procesos complicados","Falta de postventa","Plataforma ágil y personalizada","Uso limitado"], c:2},
+    {level:3,time:"noche",q:"¿Qué demuestra Cemaco respecto a medios digitales?", a:["No son necesarios","Mejoran la experiencia si se usan bien","Solo grandes empresas","Reemplazan lo físico"], c:1},
+    {level:3,time:"noche",q:"Conclusión correcta:", a:["Tecnología lo resuelve todo","Depende solo del cliente","Estrategia digital centrada en personas","Elimina atención humana"], c:2},
+  ];
 
-  // NIVEL 2 (tarde) — 3 preguntas
-  { level:2, time:"tarde", q:"Objetivo de estrategia digital centrada en cliente:", a:["Usar más plataformas","Reducir fricciones y generar valor","Automatizar todo","Solo redes"], correct:1 },
-  { level:2, time:"tarde", q:"Clave de una buena estrategia digital:", a:["Canales separados","Solo un canal","Integración coherente","Solo tecnología"], correct:2 },
-  { level:2, time:"tarde", q:"¿Por qué mantener enfoque humano?", a:["Tecnología limitada","Baja costos","Detrás hay una persona","Lo digital no sirve"], correct:2 },
+  let i = 0;
 
-  // NIVEL 3 (noche) — 3 preguntas
-  { level:3, time:"noche", q:"¿Qué hace bien Amazon en su experiencia digital?", a:["Procesos complicados","Falta de postventa","Plataforma ágil y personalizada","Uso limitado"], correct:2 },
-  { level:3, time:"noche", q:"¿Qué demuestra Cemaco respecto a medios digitales?", a:["No son necesarios","Mejoran la experiencia si se usan bien","Solo grandes empresas","Reemplazan lo físico"], correct:1 },
-  { level:3, time:"noche", q:"Conclusión correcta:", a:["Tecnología lo resuelve todo","Depende solo del cliente","Depende de estrategia centrada en personas","Elimina atención humana"], correct:2 },
-];
-
-function esc(s){return String(s).replace(/[&<>"']/g,c=>({ "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]))}
-function hearts(n){return "♥".repeat(Math.max(0,n)).split("").join(" ");}
-
-function setBg(level,time){
-  if(level===1) document.body.style.background = "linear-gradient(180deg,#0b56c1,#071a35)";
-  if(level===2) document.body.style.background = "linear-gradient(180deg,#b45309,#111827)";
-  if(level===3) document.body.style.background = "linear-gradient(180deg,#4338ca,#0b1220)";
-  document.getElementById("levelPill").textContent = `Nivel: ${level} — ${time}`;
-}
-
-function renderArena(players){
-  const arr = Object.values(players||{}).sort((a,b)=> (b.score-a.score) || (b.lives-a.lives) || a.joinedAt-b.joinedAt);
-  document.getElementById("arena").innerHTML = arr.map(p=>`
-    <div class="chip" style="opacity:${p.out?0.5:1};outline:${p.id===playerId?'2px solid rgba(255,255,255,.55)':'none'}">
-      <div class="mini">
-        <div class="hair" style="background:${p.hair}"></div>
-        <div class="head" style="background:${p.skin}"></div>
-        <div class="shirt" style="background:${p.shirt};${p.shirt==="#ffffff"?"border:1px solid rgba(0,0,0,.20)":""}"></div>
-      </div>
-      <div class="nm">${p.gender==="mujer"?"👩‍🎓":"👨‍🎓"} ${esc(p.name)}</div>
-      <div class="meta"><span class="hearts">${hearts(p.lives)}</span> · ⭐ ${p.score}</div>
-      <div class="meta">${p.out ? "🚪 Fuera" : (p.answered ? "✅ Respondió" : "⏳ Sin responder")}</div>
-    </div>
-  `).join("");
-}
-
-function showOverlay(title, text, conf="🎓"){
-  document.getElementById("conf").textContent = conf;
-  document.getElementById("ovTitle").textContent = title;
-  document.getElementById("ovText").innerHTML = text;
-  document.getElementById("ov").style.display = "flex";
-}
-function hideOverlay(){ document.getElementById("ov").style.display = "none"; }
-
-function renderQuestion(state){
-  const statePill = document.getElementById("statePill");
-  statePill.textContent = `Estado: ${state.state || "—"}`;
-
-  if(state.paused){
-    showOverlay("🏛️ Pausa", state.pauseText || "—", "🎓");
-  } else {
-    hideOverlay();
+  function hearts(n){ return "♥".repeat(Math.max(0,n)).split("").join(""); }
+  function setBg(level){
+    if(level===1) document.body.style.background="linear-gradient(180deg,#0b56c1,#071a35)";
+    if(level===2) document.body.style.background="linear-gradient(180deg,#b45309,#111827)";
+    if(level===3) document.body.style.background="linear-gradient(180deg,#4338ca,#0b1220)";
+  }
+  function salonLabel(level,time){
+    if(level===1) return "🏫 Salón 1 — Mañana";
+    if(level===2) return "🏫 Salón 2 — Tarde";
+    return "🏫 Salón 3 — Noche";
   }
 
-  if(state.state !== "playing"){
-    document.getElementById("question").textContent = "Esperando a la host…";
-    document.getElementById("sub").textContent = "Cuando inicie, aparecerán preguntas por nivel.";
-    document.getElementById("opts").innerHTML = "";
+  function render(){
+    const q = QUESTIONS[i];
+    if(!q){
+      // final
+      showOverlay("🎉 Final", `La Licda entra con sus perritos 🐶🐶🐶🐶🐶 a felicitarte.<br><br>
+      <b>Tu puntaje:</b> ${player.score} ⭐<br>
+      <b>Tu estado:</b> ${player.lives>0 ? "Terminaste el viaje 🎓" : "Quedaste fuera 🚪"}<br><br>
+      🎉 Confeti para Top 3 (medalla solo al 1°) 🥇`, "🎉");
+      return;
+    }
+
+    setBg(q.level);
+    document.getElementById("salon").textContent = salonLabel(q.level,q.time);
+    document.getElementById("nivel").textContent = `Nivel ${q.level}`;
+    document.getElementById("vidas").textContent = `Vidas: ${hearts(player.lives)}`;
+    document.getElementById("puntos").textContent = `Puntos: ${player.score}`;
+
+    document.getElementById("question").textContent = `(${i+1}/${QUESTIONS.length}) ${q.q}`;
+    document.getElementById("sub").textContent = `Nivel ${q.level} — ${q.time}`;
     document.getElementById("msg").textContent = "";
-    return;
+
+    const letters=["A","B","C","D"];
+    const opts = document.getElementById("opts");
+    opts.innerHTML = q.a.map((t,idx)=>`<button data-idx="${idx}">${letters[idx]}) ${t}</button>`).join("");
+
+    opts.querySelectorAll("button").forEach(b=>{
+      b.onclick = ()=> answer(Number(b.dataset.idx));
+    });
   }
 
-  const q = QUESTIONS[state.qIndex] || null;
-  if(!q){
-    document.getElementById("question").textContent = "Juego terminado (espera resultados).";
-    document.getElementById("opts").innerHTML = "";
-    return;
+  function showOverlay(title,text,conf="🎓"){
+    document.getElementById("conf").textContent = conf;
+    document.getElementById("ovTitle").textContent = title;
+    document.getElementById("ovText").innerHTML = text;
+    document.getElementById("ov").style.display="flex";
+  }
+  function hideOverlay(){ document.getElementById("ov").style.display="none"; }
+
+  document.getElementById("close").onclick = ()=>{
+    hideOverlay();
+    render();
+  };
+
+  function answer(choice){
+    const q = QUESTIONS[i];
+    document.querySelectorAll("#opts button").forEach(x=>x.disabled=true);
+
+    if(choice===q.c){
+      player.score += 10;
+      localStorage.setItem("VDC_PLAYER", JSON.stringify(player));
+      document.getElementById("msg").innerHTML = `<span class="good">✅ Correcto.</span> Pasas al siguiente reto.`;
+      i++;
+      setTimeout(render, 650);
+    }else{
+      const before = player.lives;
+      player.lives = Math.floor(player.lives/2);
+      if(player.lives<0) player.lives=0;
+      localStorage.setItem("VDC_PLAYER", JSON.stringify(player));
+
+      if(player.lives===0){
+        // pausa expulsión + licda anima
+        showOverlay("🏛️ Pausa — expulsión", `
+          El rector (traje gris, camisa blanca) te saca: <b>“Sigue estudiando, suerte para el siguiente curso.”</b><br><br>
+          La Licda llega corriendo con sus perritos 🐶🐶🐶🐶🐶: <b>“En la próxima lo lograrás, no te desanimes.”</b>
+        `,"🎓");
+        i++; // igual avanza para cerrar el juego
+      }else{
+        document.getElementById("msg").innerHTML = `<span class="bad">❌ Incorrecto.</span> Perdiste la mitad de tus vidas (${before} → ${player.lives}).`;
+        i++;
+        setTimeout(render, 900);
+      }
+    }
+
+    document.getElementById("vidas").textContent = `Vidas: ${hearts(player.lives)}`;
+    document.getElementById("puntos").textContent = `Puntos: ${player.score}`;
   }
 
-  setBg(q.level, q.time);
-  document.getElementById("question").textContent = `(${state.qIndex+1}/${QUESTIONS.length}) ${q.q}`;
-  document.getElementById("sub").textContent = `Nivel ${q.level} — ${q.time}. Elige una opción.`;
-
-  const letters = ["A","B","C","D"];
-  const meAnswered = state.players?.[playerId]?.answered;
-  document.getElementById("opts").innerHTML = q.a.map((t,i)=>`
-    <button ${meAnswered?"disabled":""} data-i="${i}">${letters[i]}) ${esc(t)}</button>
-  `).join("");
-
-  document.querySelectorAll("button[data-i]").forEach(btn=>{
-    btn.onclick = ()=> submitAnswer(Number(btn.dataset.i), q.correct);
-  });
-}
-
-async function submitAnswer(choice, correct){
-  if(!playerId) return alert("No estás registrado. Vuelve a index.html");
-  const pSnap = await dbGet(dbRef(db, `rooms/${room}/players/${playerId}`));
-  const p = pSnap.val();
-  if(!p || p.out) return;
-
-  if(p.answered) return;
-
-  const isCorrect = (choice === correct);
-  let lives = p.lives;
-  let score = p.score;
-
-  if(isCorrect){
-    score += 10;
-  } else {
-    lives = Math.floor(lives / 2);
-    if(lives < 0) lives = 0;
-  }
-
-  const out = lives <= 0;
-
-  await dbUpdate(dbRef(db, `rooms/${room}/players/${playerId}`), {
-    answered: true,
-    lastAnswer: choice,
-    lives,
-    score,
-    out
-  });
-
-  document.getElementById("msg").innerHTML = isCorrect
-    ? `<span class="good">✅ Correcto.</span> Espera la siguiente pregunta.`
-    : `<span class="bad">❌ Incorrecto.</span> Perdiste la mitad de tus corazones.`;
-}
-
-async function loadMe(){
-  if(!playerId) { document.getElementById("mePill").textContent = "Yo: —"; return; }
-  const snap = await dbGet(dbRef(db, `rooms/${room}/players/${playerId}`));
-  const me = snap.val();
-  document.getElementById("mePill").textContent = me ? `Yo: ${me.name}` : "Yo: —";
-}
-loadMe();
-
-// escuchar room (estado + jugadores)
-dbOnValue(dbRef(db, `rooms/${room}`), snap=>{
-  const state = snap.val() || {};
-  renderArena(state.players || {});
-  renderQuestion(state);
-});
+  render();
 </script>
 </body>
 </html>
