@@ -5,189 +5,219 @@
   <title>El Viaje Digital del Cliente</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <style>
-    body {
-      margin: 0;
-      font-family: "Segoe UI", sans-serif;
-      background: linear-gradient(#b3d9ff, #e6f2ff);
-      text-align: center;
-      min-height: 100vh;
-    }
-    h1 { margin-top: 26px; }
-    .card {
-      background: white;
-      width: 92%;
-      max-width: 440px;
-      margin: 18px auto 30px;
-      padding: 22px;
-      border-radius: 22px;
-      box-shadow: 0 10px 25px rgba(0,0,0,.15);
-    }
-    select, input, button {
-      width: 100%;
-      margin-top: 12px;
-      padding: 10px 12px;
-      border-radius: 12px;
-      border: 1px solid #cfcfcf;
-      font-size: 1em;
-      box-sizing: border-box;
-    }
-    button {
-      background: #004aad;
-      color: white;
-      font-weight: 800;
-      cursor: pointer;
-      border: none;
-      padding: 12px 14px;
-      border-radius: 14px;
-      margin-top: 14px;
-      box-shadow: 0 8px 18px rgba(0,74,173,.25);
-    }
-    button:hover { filter: brightness(.95); }
-    .emoji { font-size: 2em; margin: 10px 0 6px; }
-    .muted { color:#3b3b3b; font-size: .92em; margin-top: 8px; }
-    .hr { height:1px; background:#eee; margin:16px 0; }
-    #lista {
-      text-align:left;
-      font-size:0.95em;
-      line-height:1.55;
-      background:#f7fbff;
-      border:1px solid #e8f1ff;
-      border-radius:14px;
-      padding:10px 12px;
-      min-height: 42px;
-    }
-    .pill {
-      display:inline-block;
-      padding:2px 10px;
-      border-radius:999px;
-      background:#eef6ff;
-      border:1px solid #d7ebff;
-      font-size:.86em;
-      margin-left:6px;
-    }
+    body{margin:0;font-family:"Segoe UI",sans-serif;background:linear-gradient(#b3d9ff,#e6f2ff);text-align:center}
+    h1{margin:26px 0 6px}
+    .sub{margin:0 0 14px;opacity:.85}
+    .card{background:#fff;width:94%;max-width:960px;margin:0 auto 26px;padding:18px;border-radius:22px;box-shadow:0 12px 30px rgba(0,0,0,.14)}
+    .grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+    @media (max-width:820px){.grid{grid-template-columns:1fr}}
+    .box{background:#f6f7fb;border:1px solid #e8eaf3;border-radius:16px;padding:14px;text-align:left}
+    label{display:block;font-weight:800;margin:10px 0 6px}
+    select,input,button{width:100%;padding:10px;border-radius:12px;border:1px solid #cfd3df;font-size:1em}
+    button{background:#004aad;color:#fff;font-weight:900;border:none;cursor:pointer;padding:12px}
+    button:hover{background:#00317a}
+    hr{margin:14px 0;border:none;border-top:1px solid #e6e6e6}
+    .status{margin-top:10px;padding:10px;border-radius:12px;background:#0b1220;color:#fff;font-weight:800}
+    .mini{opacity:.8;font-size:.92em}
+    .salon{line-height:1.65}
+    .row{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+    .pill{display:inline-block;padding:6px 10px;border-radius:999px;background:#0ea5e9;color:#001019;font-weight:900}
+    .avatarWrap{display:flex;justify-content:center;align-items:center;background:#fff;border-radius:16px;border:1px solid #e8eaf3;padding:12px}
+    .avatarWrap svg{width:170px;height:170px}
+    .evt{margin-top:10px;background:#fff;border-radius:14px;border:1px solid #e8eaf3;padding:10px}
   </style>
 </head>
-
 <body>
-  <h1>🎓 El Viaje Digital del Cliente</h1>
-  <p>Experiencia universitaria interactiva</p>
 
-  <div class="card">
-    <h3>👤 Tu nombre</h3>
-    <input id="nombre" placeholder="Ej. Vivi, Ana, Carlos" />
+<h1>🎓 El Viaje Digital del Cliente</h1>
+<p class="sub">Batalla universitaria — todos juegan en vivo</p>
 
-    <div class="hr"></div>
+<div class="card">
+  <div class="grid">
 
-    <h3>🏫 Salón (en vivo)</h3>
-    <div id="lista">Cargando salón...</div>
+    <div class="box">
+      <label>👤 Tu nombre</label>
+      <input id="nombre" placeholder="Ej. Vivi, Ana, Carlos" />
 
-    <div class="hr"></div>
+      <label>🧑‍🎓 Personaje</label>
+      <select id="sexo">
+        <option value="mujer">Mujer (lona + blusa 3/4)</option>
+        <option value="hombre">Hombre (jeans + camisa)</option>
+      </select>
 
-    <h3>🚍 ¿Cómo llegas a la U?</h3>
-    <select id="transporte">
-      <option value="bus">🚌 Bus (gallinera)</option>
-      <option value="carro">🚗 Carro</option>
-      <option value="moto">🏍️ Moto</option>
-      <option value="pie">🚶 A pie</option>
-    </select>
+      <label>🚍 ¿Cómo llegas a la U?</label>
+      <select id="transporte">
+        <option value="bus">🚌 Bus (gallinera)</option>
+        <option value="carro">🚗 Carro</option>
+        <option value="moto">🏍️ Moto</option>
+        <option value="pie">🚶 A pie</option>
+      </select>
 
-    <h3 style="margin-top:18px;">🎨 Personaliza tu personaje</h3>
-    <select id="piel">
-      <option value="clara">Piel clara</option>
-      <option value="media">Piel media</option>
-      <option value="oscura">Piel oscura</option>
-    </select>
+      <label>🎨 Piel</label>
+      <select id="piel">
+        <option value="blanca">Blanca</option>
+        <option value="morena_clara">Morena clara</option>
+      </select>
 
-    <select id="pelo">
-      <option value="negro">Pelo negro</option>
-      <option value="castaño">Pelo castaño</option>
-      <option value="rubio">Pelo rubio</option>
-    </select>
+      <label>💇 Pelo</label>
+      <select id="pelo">
+        <option value="negro">Negro</option>
+        <option value="castano">Castaño</option>
+        <option value="rubio">Rubio</option>
+      </select>
 
-    <select id="ropa">
-      <option value="azul">Camisa/Blusa azul</option>
-      <option value="verde">Camisa/Blusa verde</option>
-      <option value="rosa">Camisa/Blusa rosa</option>
-      <option value="gris">Camisa/Blusa gris</option>
-    </select>
+      <label>👕 Color camisa/blusa</label>
+      <select id="ropa">
+        <option value="azul">Azul</option>
+        <option value="verde">Verde</option>
+        <option value="rosa">Rosa</option>
+        <option value="gris">Gris</option>
+      </select>
 
-    <div class="emoji">🎒🧑‍🎓👩‍🎓</div>
-
-    <button id="btnEntrar">Entrar a la Universidad</button>
-    <div class="muted">Cuando la Licda inicie el juego, aquí pasarán a la siguiente fase 🎮</div>
-
-    <div class="muted" style="margin-top:10px;">
-      Panel Host (solo tú): <span class="pill">/host.html</span>
+      <hr>
+      <button id="btnEntrar">Entrar a la Universidad</button>
+      <div id="estado" class="status">⏳ Esperando que la Licda inicie el juego…</div>
+      <div class="mini" style="margin-top:8px;">
+        Host (tú): abre <b>host.html</b> para iniciar / controlar preguntas.
+      </div>
     </div>
+
+    <div class="box">
+      <div class="row">
+        <span class="pill" id="fasePill">Fase: Lobby</span>
+        <span class="pill" style="background:#22c55e;color:#02110a" id="countPill">0 conectados</span>
+      </div>
+
+      <div class="avatarWrap" id="avatarBox" style="margin-top:10px;"></div>
+
+      <hr>
+      <b>🏫 Salón en vivo</b>
+      <div id="lista" class="salon" style="margin-top:10px;">Cargando…</div>
+
+      <div class="evt">
+        <b>📣 Eventos (se ven para todos)</b>
+        <div id="eventos" class="mini" style="margin-top:8px;">Aún no hay eventos…</div>
+      </div>
+    </div>
+
   </div>
+</div>
 
-  <script type="module">
-    import {
-      ensureGameState,
-      joinLobby,
-      listenPlayers,
-      listenState,
-      getOrCreatePlayerId,
-      heartbeat,
-      playerSetStatus
-    } from "./firebase.js";
+<script type="module">
+  import { db, ref, set, update, onValue, onDisconnect, serverTimestamp } from "./firebase.js";
 
-    const lista = document.getElementById("lista");
-    const btnEntrar = document.getElementById("btnEntrar");
+  const $ = (id)=>document.getElementById(id);
+  const avatarBox = $("avatarBox");
+  const lista = $("lista");
+  const estado = $("estado");
+  const fasePill = $("fasePill");
+  const countPill = $("countPill");
+  const eventos = $("eventos");
 
-    // 1) Asegura que exista estado base
-    ensureGameState();
+  let myId = null;
 
-    // 2) Render del salón
-    listenPlayers((players) => {
-      if (!players.length) {
-        lista.textContent = "Aún no hay estudiantes en el salón.";
-        return;
-      }
-      lista.innerHTML = players.map(p => {
-        const hearts = "❤️".repeat(Math.max(0, Math.min(3, Number(p.lives ?? 3))));
-        const st = p.status === "salio" ? "— salió" :
-                   p.status === "out" ? "— fuera" :
-                   p.status === "finished" ? "— final" : "";
-        return `• ${escapeHtml(p.nombre || "sin nombre")} ${hearts} ${st}`;
-      }).join("<br>");
+  function avatarSVG({sexo, piel, pelo, ropa}) {
+    const skin = (piel==="blanca") ? "#f7d7c4" : "#d9b08c";
+    const hair =
+      (pelo==="negro") ? "#1b1b1b" :
+      (pelo==="castano") ? "#5a3b2e" : "#d7b26a";
+    const top =
+      (ropa==="azul") ? "#2b6cff" :
+      (ropa==="verde") ? "#20b26b" :
+      (ropa==="rosa") ? "#ff4fa3" : "#6c7a89";
+
+    const jeans = "#1f3a8a";
+    const lona  = "#334155";
+    const shoes = "#111827";
+    const isF = (sexo==="mujer");
+
+    return `
+    <svg viewBox="0 0 220 220" xmlns="http://www.w3.org/2000/svg">
+      <circle cx="110" cy="110" r="92" fill="#f2f6ff"/>
+      <g>
+        <circle cx="110" cy="78" r="40" fill="${skin}"/>
+        ${isF
+          ? `<path d="M70 72c6-32 32-50 40-50s34 18 40 50c-10-10-22-16-40-16S80 62 70 72z" fill="${hair}"/>`
+          : `<path d="M72 74c6-34 30-52 38-52s32 18 38 52c-10-10-20-16-38-16S82 64 72 74z" fill="${hair}"/>`
+        }
+        <circle cx="95" cy="82" r="5.5" fill="#111827"/>
+        <circle cx="125" cy="82" r="5.5" fill="#111827"/>
+        <path d="M97 104c9 10 25 10 34 0" stroke="#111827" stroke-width="5" fill="none" stroke-linecap="round"/>
+        <path d="M72 140c8-26 24-40 38-40s30 14 38 40" fill="${top}"/>
+        ${isF
+          ? `<path d="M80 140h60v44H80z" fill="${lona}"/>`
+          : `<path d="M80 140h60v44H80z" fill="${jeans}"/>`
+        }
+        <rect x="78" y="204" width="30" height="8" rx="4" fill="${shoes}"/>
+        <rect x="112" y="204" width="30" height="8" rx="4" fill="${shoes}"/>
+      </g>
+    </svg>`;
+  }
+
+  function renderPreview(){
+    avatarBox.innerHTML = avatarSVG({
+      sexo: $("sexo").value,
+      piel: $("piel").value,
+      pelo: $("pelo").value,
+      ropa: $("ropa").value
     });
+  }
+  ["sexo","piel","pelo","ropa"].forEach(id => $(id).addEventListener("change", renderPreview));
+  renderPreview();
 
-    // 3) Si la fase cambia a play => manda a juego
-    listenState((state) => {
-      const phase = state.phase || "lobby";
-      if (phase === "play") {
-        window.location.href = "./juego.html";
-      }
+  onValue(ref(db, "salon"), (snap) => {
+    const data = snap.val() || {};
+    const arr = Object.entries(data).map(([id, p]) => {
+      const vidaTxt = (p.heartsHalf!=null) ? `❤️x${(p.heartsHalf/2).toFixed(1)}` : "❤️x5.0";
+      return `• <b>${p.nombre}</b> ${vidaTxt} ${p.estado ? "— "+p.estado : ""}`;
     });
+    lista.innerHTML = arr.length ? arr.join("<br>") : "Aún no hay estudiantes conectados…";
+    countPill.textContent = `${arr.length} conectados`;
+  });
 
-    // 4) Botón entrar (guardar en Firebase)
-    btnEntrar.addEventListener("click", async () => {
-      const nombre = document.getElementById("nombre").value.trim();
-      if (!nombre) return alert("Escribe tu nombre primero 😊");
+  onValue(ref(db, "events/last"), (snap) => {
+    const e = snap.val();
+    if (!e) return;
+    eventos.innerHTML = `🕒 ${new Date(e.ts || Date.now()).toLocaleTimeString()} — ${e.text}`;
+  });
 
-      const transporte = document.getElementById("transporte").value;
-      const piel = document.getElementById("piel").value;
-      const pelo = document.getElementById("pelo").value;
-      const ropa = document.getElementById("ropa").value;
-
-      await joinLobby({ nombre, transporte, piel, pelo, ropa });
-      alert("¡Listo! Ya estás en el salón en vivo ✅");
-    });
-
-    // 5) Heartbeat (mantener “en línea”)
-    const pid = getOrCreatePlayerId();
-    setInterval(() => heartbeat(pid), 15000);
-
-    // si abren index, marcamos lobby
-    playerSetStatus(pid, "lobby").catch(()=>{});
-
-    function escapeHtml(str){
-      return String(str).replace(/[&<>"']/g, (m) =>
-        ({ "&":"&amp;", "<":"&lt;", ">":"&gt;", '"':"&quot;", "'":"&#039;" }[m])
-      );
+  onValue(ref(db, "game/state"), (snap) => {
+    const g = snap.val() || {};
+    fasePill.textContent = `Fase: ${g.phase || "Lobby"}`;
+    if (g.phase === "RUNNING" && myId){
+      estado.textContent = "✅ Inició el juego. Entrando…";
+      location.href = "./juego.html?u=" + encodeURIComponent(myId);
     }
-  </script>
+  });
+
+  $("btnEntrar").addEventListener("click", async () => {
+    const nombre = $("nombre").value.trim();
+    if (!nombre) return alert("Escribe tu nombre primero 😊");
+
+    myId = (crypto?.randomUUID?.() || ("id_" + Date.now()));
+    const p = {
+      nombre,
+      sexo: $("sexo").value,
+      transporte: $("transporte").value,
+      piel: $("piel").value,
+      pelo: $("pelo").value,
+      ropa: $("ropa").value,
+      heartsHalf: 10,
+      eliminado: false,
+      score: 0,
+      qIndex: 0,
+      estado: "En el lobby",
+      ts: serverTimestamp()
+    };
+
+    const yoRef = ref(db, "salon/" + myId);
+    await set(yoRef, p);
+    onDisconnect(yoRef).update({ estado: "Salió", ts: serverTimestamp() });
+
+    estado.textContent = "✅ Registrado/a. Esperando que la Licda inicie…";
+  });
+</script>
+
 </body>
 </html>
 
