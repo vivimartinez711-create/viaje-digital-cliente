@@ -1,12 +1,15 @@
+// docs/firebase.js  (ES UN MODULO JS)
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.8.0/firebase-app.js";
 import {
-  getDatabase, ref, set, update, get, onValue, onDisconnect,
-  serverTimestamp, runTransaction
+  getDatabase,
+  ref,
+  set,
+  onValue,
+  serverTimestamp
 } from "https://www.gstatic.com/firebasejs/12.8.0/firebase-database.js";
 
-// ⬇️ Pega aquí tu config REAL (solo el objeto)
 const firebaseConfig = {
-  apiKey: "AIzaSyD5Rx36FYLIi3nw09exLZrg3yU241DQ5gI",
+  apiKey: "TU_API_KEY",
   authDomain: "u07059.firebaseapp.com",
   databaseURL: "https://u07059-default-rtdb.firebaseio.com",
   projectId: "u07059",
@@ -18,7 +21,4 @@ const firebaseConfig = {
 export const app = initializeApp(firebaseConfig);
 export const db = getDatabase(app);
 
-export {
-  ref, set, update, get, onValue, onDisconnect,
-  serverTimestamp, runTransaction
-};
+export { ref, set, onValue, serverTimestamp };
