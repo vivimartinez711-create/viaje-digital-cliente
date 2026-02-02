@@ -1,128 +1,72 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8"/>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Host - Viaje Digital</title>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>Panel Host</title>
   <style>
-    body{margin:0;font-family:Segoe UI,system-ui;background:radial-gradient(circle at 30% 10%,#223b6e,#0b1020);color:#eaf0ff}
-    .wrap{max-width:980px;margin:22px auto;padding:0 16px}
-    .card{background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.12);border-radius:18px;padding:16px;margin-top:14px}
-    input,button{width:100%;padding:12px;border-radius:12px;border:1px solid rgba(255,255,255,.2);font-size:1em}
-    input{background:rgba(0,0,0,.25);color:#fff}
-    button{border:none;background:#2f6df6;color:#fff;font-weight:900;cursor:pointer}
-    button:hover{background:#2457c6}
-    .danger{background:#ff3b3b}
-    .danger:hover{background:#d12f2f}
-    .ghost{background:rgba(255,255,255,.14)}
-    .ghost:hover{background:rgba(255,255,255,.20)}
-    .row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
-    @media(max-width:900px){.row{grid-template-columns:1fr}}
-    .pill{display:inline-block;padding:7px 12px;border-radius:999px;font-weight:900;background:rgba(255,255,255,.12)}
-    ul{margin:8px 0 0 18px}
-    a{color:#a8c6ff}
+    body{font-family:system-ui,Segoe UI,Arial;margin:0;background:radial-gradient(circle at top,#162a4a,#0b1220);color:#fff}
+    .wrap{max-width:920px;margin:30px auto;padding:16px}
+    .card{background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.12);border-radius:18px;padding:18px;box-shadow:0 20px 40px rgba(0,0,0,.35)}
+    h1{margin:0 0 6px}
+    .muted{opacity:.75}
+    .row{display:flex;gap:10px;flex-wrap:wrap;margin-top:14px}
+    button{flex:1;min-width:180px;padding:14px;border:0;border-radius:14px;font-weight:900;font-size:16px;cursor:pointer}
+    .a{background:#43d17a}
+    .b{background:#2f6fff;color:#fff}
+    .c{background:#ff5c7c;color:#fff}
+    .box{margin-top:12px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.12);border-radius:14px;padding:12px}
+    .pill{display:inline-block;padding:6px 10px;border-radius:999px;font-weight:900;background:#0ea5e9;color:#001a2b}
   </style>
 </head>
 <body>
-<div class="wrap">
-  <h2>👩‍🏫 Panel Host (Licda = tú)</h2>
-  <div style="opacity:.85">PIN: 2026</div>
+  <div class="wrap">
+    <div class="card">
+      <h1>🧑‍🏫 Panel Host (Licda = tú)</h1>
+      <div class="muted">Control en vivo — El Viaje Digital del Cliente</div>
 
-  <div class="card" id="login">
-    <div class="row">
-      <div>
-        <div class="pill">🔒 Acceso</div>
-        <div style="opacity:.85;margin-top:10px">PIN</div>
-        <input id="pin" placeholder="2026"/>
+      <div class="box">
+        <b>Estado:</b> <span class="pill" id="st">Cargando...</span>
+        <div class="muted" style="margin-top:6px">Si los alumnos están en index, al iniciar se irán solos a <b>juego.html</b>.</div>
       </div>
-      <div style="display:flex;align-items:end">
-        <button id="btnLogin">Entrar</button>
+
+      <div class="row">
+        <button class="b" id="btnLobby">Mandar a Lobby</button>
+        <button class="a" id="btnStart">Iniciar Juego</button>
+        <button class="c" id="btnReset">Reset</button>
+      </div>
+
+      <div class="box">
+        <b>Tip rápido:</b> abre esto en otra pestaña para alumnos: <span class="muted">index.html</span><br/>
+        <span class="muted">Y tú mantén abierto este panel.</span>
       </div>
     </div>
   </div>
 
-  <div class="card" id="panel" style="display:none">
-    <div style="display:flex;flex-wrap:wrap;gap:8px;justify-content:space-between;align-items:center">
-      <div>
-        <span class="pill" id="phase">Fase: lobby</span>
-        <span class="pill" id="count">0 conectados</span>
-      </div>
-      <div style="opacity:.85">Lobby: <a href="./index.html" target="_blank">abrir</a></div>
-    </div>
+  <script type="module">
+    import { hostToLobby, hostStart, hostResetAll, listenPhase } from "./firebase.js";
 
-    <div class="row" style="margin-top:12px">
-      <button id="btnStart">▶ Iniciar juego</button>
-      <button id="btnLobby" class="ghost">↩ Mandar a Lobby</button>
-      <button id="btnReset" class="danger">🧨 Reset total</button>
-    </div>
+    const st = document.getElementById("st");
 
-    <div class="row" style="margin-top:12px">
-      <div class="card" style="margin:0">
-        <b>🏫 Conectados</b>
-        <div id="lista" style="opacity:.9;margin-top:8px">Cargando…</div>
-      </div>
-      <div class="card" style="margin:0">
-        <b>🏆 Ranking</b>
-        <div id="rank" style="opacity:.9;margin-top:8px">—</div>
-      </div>
-    </div>
+    listenPhase((phase) => {
+      st.textContent = phase === "game" ? "JUEGO" : "LOBBY";
+    });
 
-    <div class="card" style="margin-top:12px">
-      <b>📣 Eventos</b>
-      <div id="events" style="opacity:.9;margin-top:8px">—</div>
-    </div>
-  </div>
-</div>
+    document.getElementById("btnLobby").onclick = async () => {
+      await hostToLobby();
+      alert("Listo: todos al Lobby");
+    };
 
-<script type="module">
-  import {
-    hostInit, hostListen, hostStart, hostToLobby, hostResetAll,
-    lobbyListen, leaderboardListen, eventsListen
-  } from "./firebase.js";
+    document.getElementById("btnStart").onclick = async () => {
+      await hostStart();
+      alert("¡Juego iniciado! Los alumnos se redirigen solos.");
+    };
 
-  const $=(id)=>document.getElementById(id);
-  const esc = (s)=>String(s||"").replaceAll("&","&amp;").replaceAll("<","&lt;").replaceAll(">","&gt;");
-
-  await hostInit();
-
-  $("btnLogin").onclick=()=>{
-    if(($("pin").value||"").trim()!=="2026") return alert("PIN incorrecto");
-    $("login").style.display="none";
-    $("panel").style.display="block";
-  };
-
-  hostListen(h=>{
-    $("phase").textContent = "Fase: " + (h?.phase || "lobby");
-  });
-
-  lobbyListen(obj=>{
-    const ids = obj ? Object.keys(obj) : [];
-    $("count").textContent = `${ids.length} conectados`;
-    if(!obj){ $("lista").textContent="—"; return; }
-    const arr = Object.values(obj).filter(Boolean).slice(-40).reverse();
-    $("lista").innerHTML = "<ul>" + arr.map(x=>{
-      const tag = x.status==="offline" ? " (offline)" : "";
-      return `<li>${esc(x.nombre)}${tag}</li>`;
-    }).join("") + "</ul>";
-  });
-
-  leaderboardListen(obj=>{
-    if(!obj){ $("rank").textContent="—"; return; }
-    const arr = Object.values(obj).filter(Boolean)
-      .sort((a,b)=> (b.score||0)-(a.score||0))
-      .slice(0,5);
-    $("rank").innerHTML = "<ol>" + arr.map(r=>`<li><b>${esc(r.nombre)}</b> — ${Number(r.score||0)} pts</li>`).join("") + "</ol>";
-  });
-
-  eventsListen(obj=>{
-    if(!obj){ $("events").textContent="—"; return; }
-    const arr = Object.values(obj).filter(Boolean).slice(-10).reverse();
-    $("events").innerHTML = "<ul>" + arr.map(e=>`<li>${esc(e.texto)}</li>`).join("") + "</ul>";
-  });
-
-  $("btnStart").onclick=async()=>{ await hostStart(); };
-  $("btnLobby").onclick=async()=>{ await hostToLobby(); };
-  $("btnReset").onclick=async()=>{ if(confirm("¿Reset total?")) await hostResetAll(); };
-</script>
+    document.getElementById("btnReset").onclick = async () => {
+      if (!confirm("¿Reset total? (borra conectados)")) return;
+      await hostResetAll();
+      alert("Reset listo");
+    };
+  </script>
 </body>
 </html>
