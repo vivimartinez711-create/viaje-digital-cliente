@@ -65,8 +65,14 @@
     const btnReset = document.getElementById("btnReset");
 
     btnEntrar.onclick = async () => {
+      
       const pin = document.getElementById("pin").value.trim();
       if (pin !== PIN_OK) return alert("PIN incorrecto 😅 (debe ser 2026)");
+      await set(ref(db, "game/state"), {
+  status: "playing",
+  startedAt: serverTimestamp()
+});
+
 
       loginCard.classList.add("hidden");
       panelCard.classList.remove("hidden");
