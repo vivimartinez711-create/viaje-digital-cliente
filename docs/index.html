@@ -1,214 +1,222 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>El Viaje Digital del Cliente — Lobby</title>
+  <meta charset="UTF-8" />
+  <title>El Viaje Digital del Cliente</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <style>
-    body{margin:0;font-family:Segoe UI,system-ui;background:linear-gradient(#b3d9ff,#e6f2ff);color:#0b1220}
-    .wrap{max-width:1100px;margin:18px auto;padding:0 14px}
-    h1{margin:14px 0 6px;text-align:center}
-    .sub{text-align:center;margin:0 0 14px;opacity:.85}
-    .grid{display:grid;grid-template-columns:420px 1fr;gap:14px}
-    @media(max-width:980px){.grid{grid-template-columns:1fr}}
-    .card{background:#fff;border-radius:22px;box-shadow:0 14px 35px rgba(0,0,0,.14);padding:16px}
-    label{display:block;font-weight:800;margin:10px 0 6px}
-    input,select,button{width:100%;padding:11px 12px;border-radius:14px;border:1px solid #cfd3df;font-size:16px;box-sizing:border-box}
-    button{background:#004aad;color:#fff;font-weight:900;border:none;cursor:pointer}
+    body{margin:0;font-family:"Segoe UI",sans-serif;background:linear-gradient(#b3d9ff,#e6f2ff);text-align:center}
+    h1{margin:22px 0 6px}
+    p{margin:0 0 18px;color:#234}
+    .card{background:#fff;width:92%;max-width:980px;margin:0 auto 24px;padding:18px;border-radius:18px;box-shadow:0 10px 25px rgba(0,0,0,.15);text-align:left}
+    .grid{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+    @media (max-width:900px){.grid{grid-template-columns:1fr}}
+    label{font-weight:700;display:block;margin:10px 0 6px}
+    select,input,button{width:100%;padding:11px;border-radius:12px;border:1px solid #cfd8e3;font-size:1em}
+    button{background:#004aad;color:#fff;font-weight:800;cursor:pointer;border:none}
     button:hover{background:#00317a}
-    .pill{display:inline-block;background:#0ea5e9;color:#001019;font-weight:900;padding:6px 10px;border-radius:999px;margin-right:8px}
-    .pill2{background:#22c55e;color:#02110a}
-    .list{background:#f6f7fb;border:1px solid #e8eaf3;border-radius:18px;padding:12px;min-height:140px;white-space:pre-line;line-height:1.65}
-    .row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
-    .hint{font-size:13px;opacity:.8;margin-top:10px}
-    .avatar{display:flex;justify-content:center;align-items:center;background:#f6f7fb;border:1px solid #e8eaf3;border-radius:18px;padding:10px;margin-top:10px}
-    .avatar svg{width:170px;height:170px}
-    .status{margin-top:10px;padding:10px;border-radius:14px;background:#0b1220;color:#fff;font-weight:900}
-    .small{font-size:13px;opacity:.85}
+    .pill{display:inline-block;padding:7px 12px;border-radius:999px;font-weight:800;font-size:.92em}
+    .pill.blue{background:#dcecff;color:#00317a}
+    .pill.green{background:#d9ffe7;color:#0b6b2d}
+    .box{background:#f6f9ff;border:1px solid #e3ecff;border-radius:14px;padding:12px}
+    .small{font-size:.92em;color:#345}
+    .muted{color:#567}
+    .toprow{display:flex;gap:10px;flex-wrap:wrap;align-items:center;justify-content:space-between}
+    .emoji{font-size:1.6em;margin-top:6px}
+    .hr{height:1px;background:#e8eef7;margin:12px 0}
+    ul{margin:8px 0 0 18px;padding:0}
+    li{margin:4px 0}
   </style>
 </head>
 <body>
-  <div class="wrap">
-    <h1>🎓 El Viaje Digital del Cliente</h1>
-    <p class="sub">Lobby — entren todos, y cuando la Licda inicie, pasan solos al juego 🎮</p>
+
+  <h1>🎓 El Viaje Digital del Cliente</h1>
+  <p class="muted">Experiencia universitaria interactiva (todos en vivo)</p>
+
+  <div class="card">
+    <div class="toprow">
+      <div>
+        <span class="pill blue" id="fasePill">Fase: Lobby</span>
+        <span class="pill green" id="countPill">0 conectados</span>
+      </div>
+      <div class="small">
+        Host: <a href="./host.html" target="_blank" rel="noopener">abrir panel (Licda)</a>
+      </div>
+    </div>
 
     <div class="grid">
-      <div class="card">
+      <!-- Columna izquierda: formulario -->
+      <div>
         <label>👤 Tu nombre</label>
         <input id="nombre" placeholder="Ej. Vivi, Ana, Carlos" />
 
         <label>🧑‍🎓 Personaje</label>
-        <select id="sexo">
-          <option value="mujer">Mujer (lona + blusa 3/4)</option>
-          <option value="hombre">Hombre (jeans + camisa)</option>
+        <select id="personaje">
+          <option value="Mujer (lona + blusa 3/4)">Mujer (lona + blusa 3/4)</option>
+          <option value="Mujer (jean + hoodie)">Mujer (jean + hoodie)</option>
+          <option value="Hombre (jean + camiseta)">Hombre (jean + camiseta)</option>
+          <option value="Hombre (pantalón + camisa)">Hombre (pantalón + camisa)</option>
         </select>
 
-        <label>🚍 ¿Cómo llegas a la U?</label>
+        <label>🚌 ¿Cómo llegas a la U?</label>
         <select id="transporte">
-          <option value="bus">🚌 Bus (gallinera)</option>
-          <option value="carro">🚗 Carro</option>
-          <option value="moto">🏍️ Moto</option>
-          <option value="pie">🚶 A pie</option>
+          <option value="Bus (gallinera)">🚌 Bus (gallinera)</option>
+          <option value="Carro">🚗 Carro</option>
+          <option value="Moto">🏍️ Moto</option>
+          <option value="A pie">🚶 A pie</option>
         </select>
 
         <label>🎨 Piel</label>
         <select id="piel">
-          <option value="blanca">Blanca</option>
-          <option value="morena_clara">Morena clara</option>
+          <option value="Blanca">Blanca</option>
+          <option value="Morena clara">Morena clara</option>
         </select>
 
         <label>💇 Pelo</label>
         <select id="pelo">
-          <option value="negro">Negro</option>
-          <option value="castano">Castaño</option>
-          <option value="rubio">Rubio</option>
+          <option value="Negro">Negro</option>
+          <option value="Castaño">Castaño</option>
+          <option value="Rubio">Rubio</option>
         </select>
 
         <label>👕 Color camisa/blusa</label>
         <select id="ropa">
-          <option value="azul">Azul</option>
-          <option value="verde">Verde</option>
-          <option value="rosa">Rosa</option>
-          <option value="gris">Gris</option>
+          <option value="Azul">Azul</option>
+          <option value="Verde">Verde</option>
+          <option value="Rosa">Rosa</option>
+          <option value="Gris">Gris</option>
         </select>
 
-        <div class="avatar" id="avatarBox"></div>
+        <div class="emoji">🎒👩‍🎓👨‍🎓</div>
+
+        <div class="hr"></div>
 
         <button id="btnEntrar">Entrar a la Universidad</button>
-        <div class="status" id="estado">⏳ Esperando…</div>
-        <div class="hint">Host (tú): abre <b>anfitrion.html</b> y presiona “Iniciar Juego”.</div>
+        <p class="small muted" style="margin-top:10px">
+          Cuando la Licda inicie el juego, aquí pasarán automáticamente a la siguiente fase 🎮
+        </p>
       </div>
 
-      <div class="card">
-        <div class="row">
-          <span class="pill" id="fasePill">Fase: Lobby</span>
-          <span class="pill pill2" id="countPill">0 conectados</span>
+      <!-- Columna derecha: salón + eventos -->
+      <div>
+        <div class="box">
+          <b>🏫 Salón en vivo</b>
+          <div id="lista" class="small" style="margin-top:8px">Cargando…</div>
         </div>
 
-        <h3 style="margin:12px 0 8px">🏫 Salón en vivo</h3>
-        <div class="list" id="lista">Cargando…</div>
-
-        <p class="small" style="margin-top:10px">
-          ✅ Si alguien pierde todas sus vidas, se verá una pausa en pantalla para todos.
-        </p>
+        <div class="box" style="margin-top:12px">
+          <b>📣 Eventos (se ven para todos)</b>
+          <div id="eventos" class="small" style="margin-top:8px">Aún no hay eventos…</div>
+        </div>
       </div>
     </div>
   </div>
 
-  <!-- Firebase compat -->
-  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
-  <script src="./firebase.js"></script>
+<script type="module">
+  import {
+    lobbyJoin, lobbyListen, lobbyPing, lobbyLeave,
+    hostListen, eventsListen
+  } from "./firebase.js";
 
-  <script>
-    const $ = (id)=>document.getElementById(id);
-    const avatarBox = $("avatarBox");
+  // ---- estado local
+  let playerId = sessionStorage.getItem("vd_playerId") || "";
+  let joined = sessionStorage.getItem("vd_joined") === "1";
 
-    function avatarSVG({sexo, piel, pelo, ropa}) {
-      const skin = (piel==="blanca") ? "#f7d7c4" : "#d9b08c";
-      const hair =
-        (pelo==="negro") ? "#1b1b1b" :
-        (pelo==="castano") ? "#5a3b2e" : "#d7b26a";
-      const top =
-        (ropa==="azul") ? "#2b6cff" :
-        (ropa==="verde") ? "#20b26b" :
-        (ropa==="rosa") ? "#ff4fa3" : "#6c7a89";
+  const $ = (id) => document.getElementById(id);
 
-      const jeans = "#1f3a8a";      // hombre
-      const lona  = "#334155";      // mujer
-      const shoes = "#111827";
-      const isF = (sexo==="mujer");
-
-      return `
-      <svg viewBox="0 0 220 220" xmlns="http://www.w3.org/2000/svg">
-        <circle cx="110" cy="110" r="92" fill="#f2f6ff"/>
-        <g>
-          <circle cx="110" cy="78" r="40" fill="${skin}"/>
-          <path d="M70 72c6-32 32-50 40-50s34 18 40 50c-10-10-22-16-40-16S80 62 70 72z" fill="${hair}"/>
-          <circle cx="95" cy="82" r="5.5" fill="#111827"/>
-          <circle cx="125" cy="82" r="5.5" fill="#111827"/>
-          <path d="M97 104c9 10 25 10 34 0" stroke="#111827" stroke-width="5" fill="none" stroke-linecap="round"/>
-          <path d="M72 140c8-26 24-40 38-40s30 14 38 40" fill="${top}"/>
-          ${isF
-            ? `<path d="M80 140h60v44H80z" fill="${lona}"/>`
-            : `<path d="M80 140h60v44H80z" fill="${jeans}"/>`
-          }
-          <rect x="78" y="204" width="30" height="8" rx="4" fill="${shoes}"/>
-          <rect x="112" y="204" width="30" height="8" rx="4" fill="${shoes}"/>
-        </g>
-      </svg>`;
+  function renderLobby(obj){
+    if(!obj){
+      $("lista").innerHTML = "<span class='muted'>Nadie conectado aún…</span>";
+      $("countPill").textContent = "0 conectados";
+      return;
     }
+    const ids = Object.keys(obj);
+    $("countPill").textContent = `${ids.length} conectados`;
 
-    function renderPreview(){
-      avatarBox.innerHTML = avatarSVG({
-        sexo: $("sexo").value,
-        piel: $("piel").value,
-        pelo: $("pelo").value,
-        ropa: $("ropa").value
+    const items = ids
+      .map(id => obj[id])
+      .filter(x => x && x.nombre)
+      .slice(-30)
+      .map(x => {
+        const tag = x.status === "salio" ? " — salió" : "";
+        return `• ${escapeHtml(x.nombre)}${tag}`;
       });
-    }
-    ["sexo","piel","pelo","ropa"].forEach(id => $(id).addEventListener("change", renderPreview));
-    renderPreview();
 
-    // Estado de juego
-    DB.ref("game/state").on("value", (snap)=>{
-      const g = snap.val() || {};
-      $("fasePill").textContent = "Fase: " + (g.status || "Lobby");
-      if (g.status === "playing") {
-        // si ya se registró, entra solo
-        const myId = localStorage.getItem("vdcc_playerId");
-        if (myId) location.href = "./juego.html";
+    $("lista").innerHTML = items.length ? `<ul>${items.map(i=>`<li>${i}</li>`).join("")}</ul>` : "—";
+  }
+
+  function renderEventos(obj){
+    if(!obj){
+      $("eventos").innerHTML = "<span class='muted'>Aún no hay eventos…</span>";
+      return;
+    }
+    const arr = Object.values(obj).filter(Boolean).slice(-8).reverse();
+    $("eventos").innerHTML = `<ul>${arr.map(e=>`<li>${escapeHtml(e.texto || "")}</li>`).join("")}</ul>`;
+  }
+
+  function escapeHtml(s){
+    return (s||"").replaceAll("&","&amp;").replaceAll("<","&lt;").replaceAll(">","&gt;");
+  }
+
+  // ---- escuchar lobby + eventos + host
+  lobbyListen(renderLobby);
+  eventsListen(renderEventos);
+
+  hostListen((h)=>{
+    const fase = (h && h.fase) ? h.fase : "lobby";
+    $("fasePill").textContent = "Fase: " + (fase.charAt(0).toUpperCase()+fase.slice(1));
+
+    // si el host inicia juego => mandar a juego.html
+    if (fase === "juego" || (h && h.start === true)) {
+      // solo si ya entró/registró su nombre
+      if (sessionStorage.getItem("vd_joined") === "1") {
+        window.location.href = "./juego.html";
       }
-    });
+    }
+  });
 
-    // Salón en vivo
-    DB.ref("players").on("value", (snap)=>{
-      const obj = snap.val() || {};
-      const arr = Object.entries(obj).map(([id,p])=>({id,...p}))
-        .sort((a,b)=>(a.nombre||"").localeCompare(b.nombre||""));
-      $("countPill").textContent = `${arr.length} conectados`;
-      if (!arr.length) { $("lista").textContent = "Aún no hay estudiantes conectados…"; return; }
+  // ---- botón entrar
+  $("btnEntrar").addEventListener("click", async ()=>{
+    const nombre = $("nombre").value.trim();
+    if(!nombre){ alert("Escribe tu nombre 😊"); return; }
 
-      const lines = arr.map(p=>{
-        const hearts = heartsText(p.heartsHalf ?? 10);
-        const st = p.eliminado ? " — ❌ Fuera" : "";
-        return `• ${p.nombre} ${hearts} (Puntaje: ${p.score||0})${st}`;
-      });
-      $("lista").textContent = lines.join("\n");
-    });
-
-    function heartsText(half){
-      const full = Math.floor(half/2);
-      const halfHeart = (half%2) ? "💗" : "";
-      return "❤️".repeat(full) + halfHeart;
+    // crear id si no existe
+    if(!playerId){
+      playerId = `${Date.now()}_${Math.random().toString(16).slice(2)}`;
+      sessionStorage.setItem("vd_playerId", playerId);
     }
 
-    // Entrar
-    $("btnEntrar").addEventListener("click", async ()=>{
-      const nombre = $("nombre").value.trim();
-      if (!nombre) return alert("Escribe tu nombre 😊");
+    const data = {
+      id: playerId,
+      nombre,
+      personaje: $("personaje").value,
+      transporte: $("transporte").value,
+      piel: $("piel").value,
+      pelo: $("pelo").value,
+      ropa: $("ropa").value
+    };
 
-      const id = (crypto?.randomUUID?.() || ("id_"+Date.now()+"_"+Math.random().toString(16).slice(2)));
-      localStorage.setItem("vdcc_playerId", id);
+    try{
+      await lobbyJoin(data);
+      sessionStorage.setItem("vd_joined","1");
+      joined = true;
+      alert("¡Listo! Quedaste en el salón. Espera a que la Licda inicie el juego 🎮");
+    }catch(err){
+      console.error(err);
+      alert("No se pudo registrar. Reintenta.");
+    }
+  });
 
-      const p = {
-        nombre,
-        sexo: $("sexo").value,
-        transporte: $("transporte").value,
-        piel: $("piel").value,
-        pelo: $("pelo").value,
-        ropa: $("ropa").value,
-        heartsHalf: 10,   // 5 corazones = 10 medios
-        eliminado: false,
-        score: 0,
-        joinedAt: Date.now()
-      };
+  // ---- ping cada 15s
+  setInterval(()=>{
+    if(playerId && joined) lobbyPing(playerId);
+  }, 15000);
 
-      await DB.ref("players/"+id).set(p);
-      $("estado").textContent = "✅ Registrado/a. Espera que la Licda inicie…";
-      alert("✅ Listo. Ya estás en el salón. Cuando inicie, entras solo/a.");
-    });
-  </script>
+  // ---- marcar salida
+  window.addEventListener("beforeunload", ()=>{
+    if(playerId && joined) lobbyLeave(playerId);
+  });
+</script>
+
 </body>
 </html>
-
