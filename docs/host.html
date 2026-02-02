@@ -6,217 +6,24 @@
 <title>Host — El Viaje Digital del Cliente</title>
 <style>
   body{margin:0;font-family:system-ui,Segoe UI,Arial;background:linear-gradient(180deg,#0b1220,#111827);color:#fff;min-height:100vh}
-  .wrap{max-width:1100px;margin:0 auto;padding:14px}
-  .top{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin:10px 0 12px}
-  .pill{padding:6px 10px;border-radius:999px;background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.18);font-weight:900}
-  .grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
-  @media(max-width:980px){.grid{grid-template-columns:1fr}}
-  .card{background:rgba(255,255,255,.10);border:1px solid rgba(255,255,255,.18);border-radius:18px;padding:14px;box-shadow:0 20px 45px rgba(0,0,0,.35)}
-  h1{margin:0 0 6px;font-size:20px}
-  label{display:block;font-weight:900;margin:10px 0 6px}
-  input{width:100%;padding:11px;border-radius:12px;border:1px solid rgba(255,255,255,.18);background:rgba(0,0,0,.18);color:#fff;font-size:16px}
-  button{width:100%;padding:12px;border-radius:12px;border:1px solid rgba(255,255,255,.18);background:rgba(255,255,255,.12);color:#fff;font-weight:900;cursor:pointer;text-align:center;margin-top:8px}
-  button:hover{background:rgba(255,255,255,.20)}
-  button.primary{background:#2f6fff;border:0}
-  button.primary:hover{background:#2257d6}
-  .muted{opacity:.85}
-  .arena{display:flex;flex-wrap:wrap;gap:10px;margin-top:10px}
-  .chip{width:175px;border-radius:16px;border:1px solid rgba(255,255,255,.18);background:rgba(255,255,255,.08);padding:10px}
-  .nm{font-weight:900;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-  .meta{font-size:12px;opacity:.88}
-  .hearts{color:#ff2a67}
-  .row{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+  .wrap{max-width:900px;margin:0 auto;padding:16px}
+  .card{background:rgba(255,255,255,.10);border:1px solid rgba(255,255,255,.18);border-radius:18px;padding:16px}
+  h1{margin:0 0 6px}
+  .muted{opacity:.85;line-height:1.6}
+  .pill{display:inline-block;padding:6px 10px;border-radius:999px;background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.18);font-weight:900;margin-top:10px}
 </style>
 </head>
 <body>
 <div class="wrap">
-  <div class="top">
-    <span class="pill" id="roomPill">Código: —</span>
-    <span class="pill" id="statePill">Estado: —</span>
-    <span class="pill" id="qPill">Pregunta: —</span>
-  </div>
-
-  <div class="grid">
-    <div class="card">
-      <h1>👩‍🏫 Panel Host</h1>
-      <div class="muted">Tú controlas el juego. Los estudiantes solo responden.</div>
-
-      <div class="row">
-        <div>
-          <label>Código de clase</label>
-          <input id="room" value="CLASE1">
-        </div>
-        <div>
-          <label>Clave host (opcional)</label>
-          <input id="key" placeholder="(si quieres bloquear)">
-        </div>
-      </div>
-
-      <button class="primary" id="load">Cargar sala</button>
-      <button id="start">▶️ Iniciar juego</button>
-      <button id="next">➡️ Siguiente pregunta (y cambia de nivel cuando toque)</button>
-      <button id="pauseElim">⏸️ Pausa expulsión (rector + Licda)</button>
-      <button id="resume">▶️ Reanudar</button>
-      <button id="finish">🏁 Finalizar (Top 3 + confeti)</button>
-      <button id="resetAnswers">🔄 Resetear respuestas (si necesitas repetir la pregunta)</button>
-
-      <div class="muted" style="margin-top:10px">
-        Tip: comparte a estudiantes SOLO el link de <b>index.html</b> con ?room=CLASE1.
-      </div>
+  <div class="card">
+    <h1>👩‍🏫 Panel Host</h1>
+    <div class="muted">
+      Para hoy: comparte el link del juego (index.html).<br>
+      Niveles: <b>Salón 1 (mañana)</b> → <b>Salón 2 (tarde)</b> → <b>Salón 3 (noche)</b>.<br>
+      Regla: error = pierde mitad de vidas. Si llega a 0 = pausa (rector + Licda con perritos).
     </div>
-
-    <div class="card">
-      <h1>🏫 Lobby / Ranking</h1>
-      <div class="muted">Ves cuántos están, quién respondió y quién va ganando.</div>
-      <div class="arena" id="arena"></div>
-    </div>
+    <div class="pill">Link estudiantes: abre <b>index.html</b></div>
   </div>
 </div>
-
-<script type="module">
-import { db, dbRef, dbOnValue, dbUpdate, dbGet } from "./firebase.js";
-
-function esc(s){return String(s).replace(/[&<>"']/g,c=>({ "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]))}
-function hearts(n){return "♥".repeat(Math.max(0,n)).split("").join(" ");}
-
-let ROOM = "CLASE1";
-
-async function ensureRoom(room){
-  await dbUpdate(dbRef(db, `rooms/${room}`), {
-    state: "lobby",
-    level: 1,
-    timeOfDay: "mañana",
-    qIndex: 0,
-    paused: false,
-    pauseText: "",
-    updatedAt: Date.now()
-  });
-}
-
-async function resetPlayersAnswered(room){
-  const snap = await dbGet(dbRef(db, `rooms/${room}/players`));
-  const players = snap.val() || {};
-  const updates = {};
-  Object.keys(players).forEach(id=>{
-    updates[`rooms/${room}/players/${id}/answered`] = false;
-    updates[`rooms/${room}/players/${id}/lastAnswer`] = null;
-  });
-  if(Object.keys(updates).length) await dbUpdate(dbRef(db), updates);
-}
-
-function renderArena(players){
-  const arr = Object.values(players||{})
-    .sort((a,b)=> (b.score-a.score) || (b.lives-a.lives) || a.joinedAt-b.joinedAt);
-  document.getElementById("arena").innerHTML = arr.map(p=>`
-    <div class="chip" style="opacity:${p.out?0.55:1}">
-      <div class="nm">${p.gender==="mujer"?"👩‍🎓":"👨‍🎓"} ${esc(p.name)}</div>
-      <div class="meta"><span class="hearts">${hearts(p.lives)}</span> · ⭐ ${p.score}</div>
-      <div class="meta">${p.out ? "🚪 Fuera" : (p.answered ? "✅ Respondió" : "⏳ Sin responder")}</div>
-    </div>
-  `).join("");
-}
-
-function hookRoom(room){
-  document.getElementById("roomPill").textContent = `Código: ${room}`;
-  dbOnValue(dbRef(db, `rooms/${room}`), snap=>{
-    const state = snap.val() || {};
-    document.getElementById("statePill").textContent = `Estado: ${state.state||"—"}${state.paused?" (PAUSA)":""}`;
-    document.getElementById("qPill").textContent = `Pregunta: ${typeof state.qIndex==="number" ? (state.qIndex+1) : "—"}`;
-    renderArena(state.players || {});
-  });
-}
-
-document.getElementById("load").onclick = async ()=>{
-  ROOM = (document.getElementById("room").value.trim() || "CLASE1");
-  await ensureRoom(ROOM);
-  hookRoom(ROOM);
-  alert("Sala cargada ✅");
-};
-
-document.getElementById("start").onclick = async ()=>{
-  if(!ROOM) return;
-  await dbUpdate(dbRef(db, `rooms/${ROOM}`), {
-    state: "playing",
-    qIndex: 0,
-    level: 1,
-    timeOfDay: "mañana",
-    paused:false,
-    pauseText:""
-  });
-  await resetPlayersAnswered(ROOM);
-};
-
-document.getElementById("next").onclick = async ()=>{
-  if(!ROOM) return;
-  const snap = await dbGet(dbRef(db, `rooms/${ROOM}`));
-  const st = snap.val() || {};
-  let qIndex = (st.qIndex ?? 0) + 1;
-
-  // 10 preguntas total (0..9). Cambios de nivel según el bloque:
-  // Nivel1: 0-3, Nivel2: 4-6, Nivel3: 7-9
-  let level = 1, timeOfDay = "mañana";
-  if(qIndex>=4 && qIndex<=6){ level=2; timeOfDay="tarde"; }
-  if(qIndex>=7){ level=3; timeOfDay="noche"; }
-
-  // si ya pasó la última, terminar
-  if(qIndex > 9){
-    await dbUpdate(dbRef(db, `rooms/${ROOM}`), { state:"finished" });
-    return alert("Ya no hay más preguntas. Finaliza para ver Top 3.");
-  }
-
-  await dbUpdate(dbRef(db, `rooms/${ROOM}`), {
-    qIndex, level, timeOfDay,
-    paused:false,
-    pauseText:""
-  });
-  await resetPlayersAnswered(ROOM);
-};
-
-document.getElementById("pauseElim").onclick = async ()=>{
-  if(!ROOM) return;
-  const name = prompt("¿Nombre del estudiante que quedó fuera? (tal cual)");
-  if(!name) return;
-
-  const text = `<b>El rector</b> acompaña a <b>${esc(name)}</b> a salir: “Sigue estudiando, suerte para el próximo curso.”<br><br>
-  Luego llega la <b>Licda</b> con sus 5 perritos 🐶🐶🐶🐶🐶 y le dice: “Tranquilo, tú puedes. En la próxima lo lograrás.”`;
-
-  await dbUpdate(dbRef(db, `rooms/${ROOM}`), {
-    paused:true,
-    pauseText:text
-  });
-};
-
-document.getElementById("resume").onclick = async ()=>{
-  if(!ROOM) return;
-  await dbUpdate(dbRef(db, `rooms/${ROOM}`), { paused:false, pauseText:"" });
-};
-
-document.getElementById("finish").onclick = async ()=>{
-  if(!ROOM) return;
-  await dbUpdate(dbRef(db, `rooms/${ROOM}`), {
-    state:"finished",
-    paused:true,
-    pauseText:`<div style="font-size:16px;line-height:1.6">
-      <b>🎉 ¡Final!</b><br>
-      La Licda entra con sus perritos a felicitar al ganador.<br>
-      Confeti para el Top 3. Medalla solo al primer lugar 🥇
-    </div>`
-  });
-  alert("Finalizado ✅");
-};
-
-document.getElementById("resetAnswers").onclick = async ()=>{
-  if(!ROOM) return;
-  await resetPlayersAnswered(ROOM);
-  alert("Respuestas reseteadas ✅");
-};
-
-// Autocargar CLASE1 al abrir
-(async ()=>{
-  ROOM = (document.getElementById("room").value.trim() || "CLASE1");
-  await ensureRoom(ROOM);
-  hookRoom(ROOM);
-})();
-</script>
 </body>
 </html>
