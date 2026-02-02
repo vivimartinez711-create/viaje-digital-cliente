@@ -6,7 +6,7 @@
 <title>El Viaje Digital del Cliente — Entrada</title>
 <style>
   body{margin:0;font-family:system-ui,Segoe UI,Arial;background:linear-gradient(180deg,#b3d9ff,#e6f2ff);min-height:100vh}
-  .wrap{max-width:980px;margin:0 auto;padding:18px}
+  .wrap{max-width:900px;margin:0 auto;padding:18px}
   .card{background:#fff;border-radius:18px;padding:16px;box-shadow:0 16px 40px rgba(0,0,0,.12)}
   h1{margin:0 0 6px}
   .muted{opacity:.75}
@@ -16,14 +16,10 @@
   input,select{width:100%;padding:11px;border-radius:12px;border:1px solid #d7d7d7;font-size:16px}
   button{width:100%;padding:12px;border-radius:12px;border:0;background:#004aad;color:#fff;font-weight:900;cursor:pointer}
   button:hover{background:#00327a}
-  .arena{display:flex;flex-wrap:wrap;gap:10px;margin-top:12px}
-  .chip{width:160px;border-radius:16px;border:1px solid #e5e5e5;background:#fafafa;padding:10px}
-  .mini{height:46px;border-radius:12px;position:relative;background:#fff;border:1px solid #eee;overflow:hidden}
-  .hair{position:absolute;left:50px;top:7px;width:34px;height:12px;border-radius:12px}
-  .head{position:absolute;left:52px;top:11px;width:26px;height:26px;border-radius:999px}
-  .shirt{position:absolute;left:44px;top:27px;width:42px;height:16px;border-radius:10px}
-  .nm{font-weight:900;margin-top:8px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-  .meta{font-size:12px;opacity:.85}
+  .mini{height:56px;border-radius:16px;background:#f7fbff;border:1px solid #e8eef7;position:relative;margin-top:10px}
+  .hair{position:absolute;left:46%;top:12px;width:36px;height:12px;border-radius:12px;transform:translateX(-50%)}
+  .head{position:absolute;left:46%;top:18px;width:30px;height:30px;border-radius:999px;transform:translateX(-50%)}
+  .shirt{position:absolute;left:46%;top:34px;width:46px;height:18px;border-radius:10px;transform:translateX(-50%)}
   .pill{display:inline-block;padding:6px 10px;border-radius:999px;background:#eef4ff;color:#0b3ea3;font-weight:900;margin:8px 0}
 </style>
 </head>
@@ -31,13 +27,13 @@
 <div class="wrap">
   <div class="card">
     <h1>🎓 El Viaje Digital del Cliente</h1>
-    <div class="muted">Entrada al juego (multijugador en vivo). Todos se verán en el salón.</div>
+    <div class="muted">Juego por niveles (mañana/tarde/noche). 5 corazones. Si fallas pierdes la mitad.</div>
 
-    <div class="pill">Código de clase: <span id="roomTxt">CLASE1</span></div>
+    <div class="pill">Para jugar: completa esto y presiona <b>Entrar</b></div>
 
     <div class="row">
       <div>
-        <label>Tu nombre</label>
+        <label>Nombre</label>
         <input id="name" placeholder="Ej: Ana, Carlos, Vivi">
       </div>
       <div>
@@ -78,127 +74,59 @@
         </select>
       </div>
       <div>
-        <label>¿Cómo llegas a la U?</label>
+        <label>Transporte</label>
         <select id="transport">
-          <option value="bus">🚌 Bus (gallinera)</option>
-          <option value="carro">🚗 Carro</option>
-          <option value="moto">🏍️ Moto</option>
-          <option value="pie">🚶 A pie</option>
+          <option>🚌 Bus (gallinera)</option>
+          <option>🚗 Carro</option>
+          <option>🏍️ Moto</option>
+          <option>🚶 A pie</option>
         </select>
       </div>
     </div>
 
-    <div class="row">
-      <div>
-        <label>Código de clase (opcional)</label>
-        <input id="room" value="CLASE1">
-      </div>
-      <div>
-        <label>&nbsp;</label>
-        <button id="join">Entrar al salón</button>
-      </div>
+    <div class="mini">
+      <div class="hair" id="phair"></div>
+      <div class="head" id="phead"></div>
+      <div class="shirt" id="pshirt"></div>
     </div>
 
-    <div class="muted" style="margin-top:10px">Salón en vivo (quiénes ya están conectados):</div>
-    <div class="arena" id="arena"></div>
+    <button id="go" style="margin-top:12px">Entrar al juego</button>
 
     <div class="muted" style="margin-top:10px">
-      Cuando entras, te manda automáticamente al juego.  
-      Si se queda “cargando”, abre en modo incógnito.
+      Si algo no carga, abre en modo incógnito.
     </div>
   </div>
 </div>
 
-<script type="module">
-import { db, dbRef, dbSet, dbUpdate, dbOnValue, dbTs, qs, uid } from "./firebase.js";
+<script>
+  const skin = document.getElementById("skin");
+  const hair = document.getElementById("hair");
+  const shirt = document.getElementById("shirt");
+  function paint(){
+    document.getElementById("phead").style.background = skin.value;
+    document.getElementById("phair").style.background = hair.value;
+    document.getElementById("pshirt").style.background = shirt.value;
+    document.getElementById("pshirt").style.border = (shirt.value==="#ffffff") ? "1px solid rgba(0,0,0,.15)" : "none";
+  }
+  [skin,hair,shirt].forEach(x=>x.addEventListener("change",paint));
+  paint();
 
-const roomInput = document.getElementById("room");
-const roomTxt = document.getElementById("roomTxt");
-const arena = document.getElementById("arena");
-
-function esc(s){return String(s).replace(/[&<>"']/g,c=>({ "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]))}
-
-function renderPlayers(players){
-  const arr = Object.values(players || {});
-  arena.innerHTML = arr.map(p=>`
-    <div class="chip">
-      <div class="mini">
-        <div class="hair" style="background:${p.hair}"></div>
-        <div class="head" style="background:${p.skin}"></div>
-        <div class="shirt" style="background:${p.shirt};${p.shirt==="#ffffff"?"border:1px solid rgba(0,0,0,.12)":""}"></div>
-      </div>
-      <div class="nm">${p.gender==="mujer"?"👩‍🎓":"👨‍🎓"} ${esc(p.name)}</div>
-      <div class="meta">${esc(p.transportLabel)} · ♥♥♥♥♥</div>
-    </div>
-  `).join("");
-}
-
-function transportLabel(v){
-  return v==="bus" ? "🚌 Bus (gallinera)" :
-         v==="carro" ? "🚗 Carro" :
-         v==="moto" ? "🏍️ Moto" : "🚶 A pie";
-}
-
-function watchLobby(room){
-  roomTxt.textContent = room;
-  const lobbyRef = dbRef(db, `rooms/${room}/players`);
-  dbOnValue(lobbyRef, snap => renderPlayers(snap.val()));
-}
-
-const urlRoom = qs("room");
-if(urlRoom){ roomInput.value = urlRoom; }
-watchLobby(roomInput.value.trim() || "CLASE1");
-
-roomInput.addEventListener("input", ()=> watchLobby(roomInput.value.trim()||"CLASE1"));
-
-document.getElementById("join").onclick = async ()=>{
-  const room = roomInput.value.trim() || "CLASE1";
-  const name = document.getElementById("name").value.trim();
-  if(!name) return alert("Escribe tu nombre 😊");
-
-  const playerId = uid();
-  const gender = document.getElementById("gender").value;
-  const skin = document.getElementById("skin").value;
-  const hair = document.getElementById("hair").value;
-  const shirt = document.getElementById("shirt").value;
-  const transport = document.getElementById("transport").value;
-
-  // crear room si no existe (estado inicial)
-  await dbUpdate(dbRef(db, `rooms/${room}`), {
-    state: "lobby",
-    level: 1,
-    timeOfDay: "mañana",
-    qIndex: 0,
-    paused: false,
-    pauseText: "",
-    updatedAt: dbTs()
-  });
-
-  // registrar jugador
-  await dbSet(dbRef(db, `rooms/${room}/players/${playerId}`), {
-    id: playerId,
-    name,
-    gender,
-    skin,
-    hair,
-    shirt,
-    transport,
-    transportLabel: transportLabel(transport),
-    lives: 5,
-    score: 0,
-    out: false,
-    answered: false,
-    lastAnswer: null,
-    joinedAt: Date.now()
-  });
-
-  // guardar en navegador
-  localStorage.setItem("vdc_room", room);
-  localStorage.setItem("vdc_playerId", playerId);
-
-  // ir al juego
-  location.href = `juego.html?room=${encodeURIComponent(room)}`;
-};
+  document.getElementById("go").onclick = ()=>{
+    const name = document.getElementById("name").value.trim();
+    if(!name) return alert("Escribe tu nombre 😊");
+    const player = {
+      name,
+      gender: document.getElementById("gender").value,
+      skin: skin.value,
+      hair: hair.value,
+      shirt: shirt.value,
+      transport: document.getElementById("transport").value,
+      lives: 5,
+      score: 0
+    };
+    localStorage.setItem("VDC_PLAYER", JSON.stringify(player));
+    location.href = "juego.html";
+  };
 </script>
 </body>
 </html>
