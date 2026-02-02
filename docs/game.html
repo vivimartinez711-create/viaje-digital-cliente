@@ -1,197 +1,225 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8"/>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Juego - Viaje Digital</title>
-  <style>
-    body{margin:0;font-family:Segoe UI,system-ui;background:linear-gradient(#0b1020,#13224a);color:#fff}
-    .wrap{max-width:980px;margin:0 auto;padding:18px}
-    .pill{display:inline-block;padding:7px 12px;border-radius:999px;font-weight:900;background:rgba(255,255,255,.12);margin-right:8px}
-    .card{background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.12);border-radius:18px;padding:16px;margin-top:14px}
-    .row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
-    @media(max-width:900px){.row{grid-template-columns:1fr}}
-    .opt{background:rgba(255,255,255,.10);border:1px solid rgba(255,255,255,.14);padding:12px;border-radius:14px;cursor:pointer}
-    .opt:hover{background:rgba(255,255,255,.16)}
-    button{width:100%;padding:12px;border-radius:12px;border:none;font-weight:900;cursor:pointer;background:#2f6df6;color:#fff}
-    button:hover{background:#2457c6}
-    .muted{opacity:.85}
-    .danger{color:#ffb3b3}
-    .ok{color:#b9ffd2}
-  </style>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>El Viaje Digital del Cliente — Juego en vivo</title>
+<style>
+  :root{--card:rgba(255,255,255,.12);--border:rgba(255,255,255,.18);--txt:#fff}
+  body{margin:0;font-family:system-ui,Segoe UI,Arial;color:var(--txt);min-height:100vh;background:linear-gradient(180deg,#0b56c1,#071a35)}
+  .wrap{max-width:1200px;margin:0 auto;padding:14px}
+  .top{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin:10px 0 12px}
+  .pill{padding:6px 10px;border-radius:999px;background:rgba(255,255,255,.14);border:1px solid var(--border);font-weight:900}
+  .grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+  @media(max-width:980px){.grid{grid-template-columns:1fr}}
+  .card{background:var(--card);border:1px solid var(--border);border-radius:18px;padding:14px;box-shadow:0 20px 45px rgba(0,0,0,.35)}
+  .q{font-size:20px;font-weight:900;margin:4px 0 8px}
+  .muted{opacity:.85}
+  .opts{display:grid;gap:8px;margin-top:10px}
+  button{width:100%;padding:12px;border-radius:12px;border:1px solid rgba(255,255,255,.18);background:rgba(255,255,255,.12);color:#fff;font-weight:900;cursor:pointer;text-align:left}
+  button:hover{background:rgba(255,255,255,.20)}
+  button[disabled]{opacity:.55;cursor:not-allowed}
+  .msg{margin-top:10px;font-weight:900}
+  .good{color:#39d98a} .bad{color:#ff4d6d}
+  .arena{display:flex;flex-wrap:wrap;gap:10px}
+  .chip{width:160px;border-radius:16px;border:1px solid rgba(255,255,255,.18);background:rgba(255,255,255,.08);padding:10px}
+  .mini{height:46px;border-radius:12px;position:relative;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.12);overflow:hidden}
+  .hair{position:absolute;left:50px;top:7px;width:34px;height:12px;border-radius:12px}
+  .head{position:absolute;left:52px;top:11px;width:26px;height:26px;border-radius:999px}
+  .shirt{position:absolute;left:44px;top:27px;width:42px;height:16px;border-radius:10px}
+  .nm{font-weight:900;margin-top:8px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .meta{font-size:12px;opacity:.88}
+  .hearts{color:#ff2a67;letter-spacing:1px}
+  .overlay{position:fixed;inset:0;display:none;align-items:center;justify-content:center;background:rgba(0,0,0,.78);padding:18px;z-index:999}
+  .box{max-width:780px;background:#111827;border:1px solid rgba(255,255,255,.18);border-radius:18px;padding:18px;text-align:center}
+  .big{font-size:20px;font-weight:900}
+  .conf{font-size:34px;letter-spacing:2px}
+</style>
 </head>
 <body>
 <div class="wrap">
-  <div>
-    <span class="pill" id="phase">Fase: juego</span>
-    <span class="pill" id="hearts">❤️❤️❤️❤️❤️</span>
-    <span class="pill" id="score">Puntos: 0</span>
+  <div class="top">
+    <span class="pill" id="roomPill">Código: —</span>
+    <span class="pill" id="levelPill">Nivel: —</span>
+    <span class="pill" id="statePill">Estado: —</span>
+    <span class="pill" id="mePill">Yo: —</span>
   </div>
 
-  <div class="card">
-    <div class="muted">Jugador:</div>
-    <div style="font-size:22px;font-weight:900" id="name">—</div>
-    <div class="muted" id="meta" style="margin-top:6px">—</div>
-  </div>
+  <div class="grid">
+    <div class="card">
+      <div class="q" id="question">Esperando a la host…</div>
+      <div class="muted" id="sub">Cuando la host inicie, aparecerán preguntas por nivel.</div>
+      <div class="opts" id="opts"></div>
+      <div class="msg" id="msg"></div>
+      <div class="muted" style="margin-top:10px">
+        Regla: si fallas, pierdes la mitad de tus corazones (5→2→1→0). Con 0, quedas fuera.
+      </div>
+    </div>
 
-  <div class="card" id="game">
-    <div style="font-weight:900" id="nTitle">Nivel 1</div>
-    <h2 id="q" style="margin:12px 0 6px">Cargando…</h2>
-    <div class="muted" id="msg">Elige una opción</div>
-    <div id="opts" class="row" style="margin-top:12px"></div>
+    <div class="card">
+      <div class="q">🏫 Salón en vivo</div>
+      <div class="muted">Todos conectados (se actualiza en tiempo real).</div>
+      <div class="arena" id="arena"></div>
+    </div>
   </div>
+</div>
 
-  <div class="card" id="rankCard">
-    <b>🏆 Ranking en vivo</b>
-    <div id="rank" class="muted" style="margin-top:8px">—</div>
-  </div>
-
-  <div class="card" id="end" style="display:none">
-    <h2 id="endTitle">Fin</h2>
-    <div id="endText" class="muted"></div>
-    <div style="margin-top:12px"><button onclick="location.href='./index.html'">Volver al lobby</button></div>
+<div class="overlay" id="ov">
+  <div class="box">
+    <div class="conf" id="conf">🎓</div>
+    <div class="big" id="ovTitle">Pausa</div>
+    <div class="muted" id="ovText">—</div>
   </div>
 </div>
 
 <script type="module">
-  import {
-    hostListen, leaderboardListen, updatePlayer, submitLeaderboard, pushEvent
-  } from "./firebase.js";
+import { db, dbRef, dbOnValue, dbUpdate, dbGet, qs } from "./firebase.js";
 
-  const $=(id)=>document.getElementById(id);
-  const esc=(s)=>String(s||"").replaceAll("&","&amp;").replaceAll("<","&lt;").replaceAll(">","&gt;");
+const room = qs("room") || localStorage.getItem("vdc_room") || "CLASE1";
+const playerId = localStorage.getItem("vdc_playerId");
 
-  const playerId = sessionStorage.getItem("vd_id") || "";
-  const nombre = sessionStorage.getItem("vd_nombre") || "Estudiante";
+document.getElementById("roomPill").textContent = `Código: ${room}`;
 
-  $("name").textContent = nombre;
-  $("meta").textContent = "Responde rápido y suma puntos. (5 corazones)";
+const QUESTIONS = [
+  // NIVEL 1 (mañana) — 4 preguntas
+  { level:1, time:"mañana", q:"¿Qué es la experiencia del cliente?", a:["El precio que paga","La publicidad","La percepción total en todas sus interacciones","Solo el postventa"], correct:2 },
+  { level:1, time:"mañana", q:"¿En qué momento se construye la experiencia del cliente?", a:["Solo cuando compra","Solo cuando hay problema","Antes, durante y después","Al final"], correct:2 },
+  { level:1, time:"mañana", q:"Rol de medios digitales en la experiencia:", a:["Reemplazar personas","Solo publicidad","Facilitar interacción y servicio","Solo reducir costos"], correct:2 },
+  { level:1, time:"mañana", q:"La tecnología debe verse como:", a:["Un fin","Un gasto","Un habilitador de la experiencia","Un reemplazo humano total"], correct:2 },
 
-  // Si el host manda a lobby, te “saca”
-  hostListen(h=>{
-    const phase = h?.phase || "lobby";
-    $("phase").textContent = "Fase: " + phase;
-    if(phase === "lobby") location.href = "./index.html";
-  });
+  // NIVEL 2 (tarde) — 3 preguntas
+  { level:2, time:"tarde", q:"Objetivo de estrategia digital centrada en cliente:", a:["Usar más plataformas","Reducir fricciones y generar valor","Automatizar todo","Solo redes"], correct:1 },
+  { level:2, time:"tarde", q:"Clave de una buena estrategia digital:", a:["Canales separados","Solo un canal","Integración coherente","Solo tecnología"], correct:2 },
+  { level:2, time:"tarde", q:"¿Por qué mantener enfoque humano?", a:["Tecnología limitada","Baja costos","Detrás hay una persona","Lo digital no sirve"], correct:2 },
 
-  leaderboardListen(obj=>{
-    if(!obj){ $("rank").textContent="—"; return; }
-    const arr = Object.values(obj).filter(Boolean)
-      .sort((a,b)=> (b.score||0)-(a.score||0))
-      .slice(0,10);
-    $("rank").innerHTML = "<ol>" + arr.map(r=>`<li><b>${esc(r.nombre)}</b> — ${Number(r.score||0)} pts</li>`).join("") + "</ol>";
-  });
+  // NIVEL 3 (noche) — 3 preguntas
+  { level:3, time:"noche", q:"¿Qué hace bien Amazon en su experiencia digital?", a:["Procesos complicados","Falta de postventa","Plataforma ágil y personalizada","Uso limitado"], correct:2 },
+  { level:3, time:"noche", q:"¿Qué demuestra Cemaco respecto a medios digitales?", a:["No son necesarios","Mejoran la experiencia si se usan bien","Solo grandes empresas","Reemplazan lo físico"], correct:1 },
+  { level:3, time:"noche", q:"Conclusión correcta:", a:["Tecnología lo resuelve todo","Depende solo del cliente","Depende de estrategia centrada en personas","Elimina atención humana"], correct:2 },
+];
 
-  // ------- PREGUNTAS (las tuyas) -------
-  const quiz = [
-    {nivel:"🟢 NIVEL 1 – CONCEPTOS CLAVE", q:"¿Qué es la experiencia del cliente?", a:["El precio que paga el cliente","La publicidad de la empresa","La percepción total del cliente en todas sus interacciones","Solo el servicio postventa"], ok:2},
-    {nivel:"🟢 NIVEL 1 – CONCEPTOS CLAVE", q:"¿En qué momento se construye la experiencia del cliente?", a:["Solo cuando compra","Solo cuando hay un problema","Antes, durante y después de la compra","Al final del proceso"], ok:2},
-    {nivel:"🟢 NIVEL 1 – CONCEPTOS CLAVE", q:"¿Cuál es el principal rol de los medios digitales en la experiencia del cliente?", a:["Reemplazar a las personas","Aumentar publicidad","Facilitar la interacción y el servicio al cliente","Reducir costos únicamente"], ok:2},
-    {nivel:"🟢 NIVEL 1 – CONCEPTOS CLAVE", q:"La tecnología en la experiencia del cliente debe verse como:", a:["Un fin en sí mismo","Un gasto innecesario","Un habilitador de la experiencia","Un reemplazo total de la atención humana"], ok:2},
+function esc(s){return String(s).replace(/[&<>"']/g,c=>({ "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]))}
+function hearts(n){return "♥".repeat(Math.max(0,n)).split("").join(" ");}
 
-    {nivel:"🟡 NIVEL 2 – ESTRATEGIA DIGITAL", q:"¿Cuál es el objetivo principal de una estrategia digital centrada en el cliente?", a:["Usar más plataformas","Reducir fricciones y generar valor","Automatizar todo","Tener presencia en redes sociales"], ok:1},
-    {nivel:"🟡 NIVEL 2 – ESTRATEGIA DIGITAL", q:"¿Qué característica es clave para una buena estrategia digital?", a:["Que cada canal funcione separado","Que solo exista un canal","Integración coherente entre canales","Uso exclusivo de tecnología"], ok:2},
-    {nivel:"🟡 NIVEL 2 – ESTRATEGIA DIGITAL", q:"¿Qué acción ayuda a mejorar la experiencia digital del cliente?", a:["No escuchar al cliente","Conocer sus necesidades y expectativas","Copiar a la competencia","Cambiar el logo"], ok:1},
-    {nivel:"🟡 NIVEL 2 – ESTRATEGIA DIGITAL", q:"¿Por qué es importante mantener un enfoque humano en lo digital?", a:["Porque la tecnología es limitada","Porque reduce costos","Porque detrás de cada interacción hay una persona","Porque lo digital no funciona solo"], ok:2},
+function setBg(level,time){
+  if(level===1) document.body.style.background = "linear-gradient(180deg,#0b56c1,#071a35)";
+  if(level===2) document.body.style.background = "linear-gradient(180deg,#b45309,#111827)";
+  if(level===3) document.body.style.background = "linear-gradient(180deg,#4338ca,#0b1220)";
+  document.getElementById("levelPill").textContent = `Nivel: ${level} — ${time}`;
+}
 
-    {nivel:"🔴 NIVEL 3 – CASOS PRÁCTICOS", q:"¿Qué hace bien Amazon en su experiencia digital?", a:["Procesos complicados","Falta de atención postventa","Plataforma ágil y personalizada","Uso limitado de tecnología"], ok:2},
-    {nivel:"🔴 NIVEL 3 – CASOS PRÁCTICOS", q:"¿Por qué Amazon es considerado un caso exitoso de experiencia del cliente?", a:["Por su publicidad","Por ofrecer precios bajos únicamente","Por facilitar todo el recorrido del cliente","Por eliminar la atención humana"], ok:2},
-    {nivel:"🔴 NIVEL 3 – CASOS PRÁCTICOS", q:"¿Qué aspecto destaca en el ejemplo de Cemaco en Guatemala?", a:["Venta solo presencial","Falta de información digital","Uso de comercio electrónico para facilitar la compra","Procesos confusos para el cliente"], ok:2},
-    {nivel:"🔴 NIVEL 3 – CASOS PRÁCTICOS", q:"¿Qué demuestra el caso de Cemaco respecto a los medios digitales?", a:["Que no son necesarios","Que mejoran la experiencia cuando se usan correctamente","Que solo sirven para grandes empresas","Que reemplazan al servicio físico"], ok:1},
-    {nivel:"🔴 NIVEL 3 – CASOS PRÁCTICOS", q:"¿Qué problema mostró LATAM en su experiencia digital durante la pandemia?", a:["Exceso de tiendas físicas","Digitalización sin estrategia centrada en el cliente","Falta de redes sociales","Poca publicidad"], ok:1},
-    {nivel:"🔴 NIVEL 3 – CASOS PRÁCTICOS", q:"¿Cuál fue un error clave en el caso LATAM desde la experiencia del cliente?", a:["Uso de tecnología avanzada","Atención clara y empática","Automatización excesiva sin enfoque humano","Integración correcta de canales"], ok:2},
-
-    {nivel:"🏆 JEFE FINAL", q:"¿Cuál es la conclusión más correcta sobre los medios digitales y la experiencia del cliente?", a:["La tecnología lo resuelve todo","La experiencia depende solo del cliente","La experiencia depende de una estrategia digital bien gestionada y centrada en las personas","Lo digital elimina la necesidad de atención humana"], ok:2},
-  ];
-
-  let hearts = 5;
-  let score = 0;
-  let i = 0;
-  let locked = false;
-
-  function render(){
-    const q = quiz[i];
-    $("nTitle").textContent = q.nivel;
-    $("q").textContent = q.q;
-    $("hearts").textContent = "❤️".repeat(hearts) + "🖤".repeat(Math.max(0,5-hearts));
-    $("score").textContent = "Puntos: " + score;
-    $("msg").innerHTML = "Elige una opción";
-
-    $("opts").innerHTML = q.a.map((t,idx)=>`
-      <div class="opt" data-idx="${idx}">
-        <b>${String.fromCharCode(65+idx)}.</b> ${esc(t)}
+function renderArena(players){
+  const arr = Object.values(players||{}).sort((a,b)=> (b.score-a.score) || (b.lives-a.lives) || a.joinedAt-b.joinedAt);
+  document.getElementById("arena").innerHTML = arr.map(p=>`
+    <div class="chip" style="opacity:${p.out?0.5:1};outline:${p.id===playerId?'2px solid rgba(255,255,255,.55)':'none'}">
+      <div class="mini">
+        <div class="hair" style="background:${p.hair}"></div>
+        <div class="head" style="background:${p.skin}"></div>
+        <div class="shirt" style="background:${p.shirt};${p.shirt==="#ffffff"?"border:1px solid rgba(0,0,0,.20)":""}"></div>
       </div>
-    `).join("");
+      <div class="nm">${p.gender==="mujer"?"👩‍🎓":"👨‍🎓"} ${esc(p.name)}</div>
+      <div class="meta"><span class="hearts">${hearts(p.lives)}</span> · ⭐ ${p.score}</div>
+      <div class="meta">${p.out ? "🚪 Fuera" : (p.answered ? "✅ Respondió" : "⏳ Sin responder")}</div>
+    </div>
+  `).join("");
+}
 
-    document.querySelectorAll(".opt").forEach(el=>{
-      el.onclick=()=>pick(Number(el.dataset.idx));
-    });
+function showOverlay(title, text, conf="🎓"){
+  document.getElementById("conf").textContent = conf;
+  document.getElementById("ovTitle").textContent = title;
+  document.getElementById("ovText").innerHTML = text;
+  document.getElementById("ov").style.display = "flex";
+}
+function hideOverlay(){ document.getElementById("ov").style.display = "none"; }
+
+function renderQuestion(state){
+  const statePill = document.getElementById("statePill");
+  statePill.textContent = `Estado: ${state.state || "—"}`;
+
+  if(state.paused){
+    showOverlay("🏛️ Pausa", state.pauseText || "—", "🎓");
+  } else {
+    hideOverlay();
   }
 
-  async function pick(ans){
-    if(locked) return;
-    locked = true;
-
-    const q = quiz[i];
-    const ok = (ans === q.ok);
-
-    if(ok){
-      score += 10;
-      $("msg").innerHTML = `<span class="ok">✅ Correcto</span> (+10)`;
-    }else{
-      hearts -= 1; // “media vida” aquí equivale a 1 corazón (tienes 5)
-      $("msg").innerHTML = `<span class="danger">❌ Incorrecto</span> (-1 corazón)`;
-    }
-
-    // guarda en RTDB (por si quieres ver avance)
-    if(playerId){
-      await updatePlayer(playerId, { hearts, score, qIndex: i, finished: false });
-    }
-
-    setTimeout(async ()=>{
-      if(hearts <= 0){
-        await lose();
-        return;
-      }
-      i++;
-      if(i >= quiz.length){
-        await win();
-        return;
-      }
-      locked = false;
-      render();
-    }, 800);
+  if(state.state !== "playing"){
+    document.getElementById("question").textContent = "Esperando a la host…";
+    document.getElementById("sub").textContent = "Cuando inicie, aparecerán preguntas por nivel.";
+    document.getElementById("opts").innerHTML = "";
+    document.getElementById("msg").textContent = "";
+    return;
   }
 
-  async function lose(){
-    $("game").style.display="none";
-    $("end").style.display="block";
-    $("endTitle").textContent = "💀 Te quedaste sin corazones";
-    $("endText").innerHTML = `
-      <b>Jefe (traje gris):</b> “Sigue estudiando, suerte para el siguiente curso.”<br>
-      <b>Licda:</b> “En la próxima lo lograrás, no te desanimes.” 🐶🐶🐶🐶🐶
-      <br><br><b>Puntos:</b> ${score}
-    `;
-    if(playerId) await updatePlayer(playerId, { hearts:0, score, finished:true });
-    await pushEvent(`😵 ${nombre} se quedó sin corazones.`);
-    // también lo subimos al ranking (aunque pierda)
-    await submitLeaderboard(playerId || (Date.now()+""), nombre, score);
+  const q = QUESTIONS[state.qIndex] || null;
+  if(!q){
+    document.getElementById("question").textContent = "Juego terminado (espera resultados).";
+    document.getElementById("opts").innerHTML = "";
+    return;
   }
 
-  async function win(){
-    $("game").style.display="none";
-    $("end").style.display="block";
-    $("endTitle").textContent = "🏆 ¡Ganaste!";
-    $("endText").innerHTML = `
-      <b>Licda:</b> “¡Excelente! Felicidades.” 🐶🐶🐶🐶🐶<br>
-      🎉 Confeti para 1er lugar 🎉<br><br><b>Puntos:</b> ${score}
-    `;
-    if(playerId) await updatePlayer(playerId, { hearts, score, finished:true });
-    await pushEvent(`🏆 ${nombre} terminó el juego con ${score} puntos.`);
-    await submitLeaderboard(playerId || (Date.now()+""), nombre, score);
+  setBg(q.level, q.time);
+  document.getElementById("question").textContent = `(${state.qIndex+1}/${QUESTIONS.length}) ${q.q}`;
+  document.getElementById("sub").textContent = `Nivel ${q.level} — ${q.time}. Elige una opción.`;
+
+  const letters = ["A","B","C","D"];
+  const meAnswered = state.players?.[playerId]?.answered;
+  document.getElementById("opts").innerHTML = q.a.map((t,i)=>`
+    <button ${meAnswered?"disabled":""} data-i="${i}">${letters[i]}) ${esc(t)}</button>
+  `).join("");
+
+  document.querySelectorAll("button[data-i]").forEach(btn=>{
+    btn.onclick = ()=> submitAnswer(Number(btn.dataset.i), q.correct);
+  });
+}
+
+async function submitAnswer(choice, correct){
+  if(!playerId) return alert("No estás registrado. Vuelve a index.html");
+  const pSnap = await dbGet(dbRef(db, `rooms/${room}/players/${playerId}`));
+  const p = pSnap.val();
+  if(!p || p.out) return;
+
+  if(p.answered) return;
+
+  const isCorrect = (choice === correct);
+  let lives = p.lives;
+  let score = p.score;
+
+  if(isCorrect){
+    score += 10;
+  } else {
+    lives = Math.floor(lives / 2);
+    if(lives < 0) lives = 0;
   }
 
-  render();
+  const out = lives <= 0;
+
+  await dbUpdate(dbRef(db, `rooms/${room}/players/${playerId}`), {
+    answered: true,
+    lastAnswer: choice,
+    lives,
+    score,
+    out
+  });
+
+  document.getElementById("msg").innerHTML = isCorrect
+    ? `<span class="good">✅ Correcto.</span> Espera la siguiente pregunta.`
+    : `<span class="bad">❌ Incorrecto.</span> Perdiste la mitad de tus corazones.`;
+}
+
+async function loadMe(){
+  if(!playerId) { document.getElementById("mePill").textContent = "Yo: —"; return; }
+  const snap = await dbGet(dbRef(db, `rooms/${room}/players/${playerId}`));
+  const me = snap.val();
+  document.getElementById("mePill").textContent = me ? `Yo: ${me.name}` : "Yo: —";
+}
+loadMe();
+
+// escuchar room (estado + jugadores)
+dbOnValue(dbRef(db, `rooms/${room}`), snap=>{
+  const state = snap.val() || {};
+  renderArena(state.players || {});
+  renderQuestion(state);
+});
 </script>
 </body>
 </html>
