@@ -1,92 +1,370 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8" />
-  <title>Fase 2 — Aula | El Viaje Digital del Cliente</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>El Viaje Digital del Cliente — Juego</title>
   <style>
-    body{
-      margin:0;
-      font-family:"Segoe UI", sans-serif;
-      background: linear-gradient(#0b1220, #111a2e);
-      color:#fff;
-      text-align:center;
-      min-height:100vh;
-      display:flex;
-      align-items:center;
-      justify-content:center;
-      padding:16px;
-      box-sizing:border-box;
+    body{margin:0;font-family:Segoe UI,system-ui;color:#0b1220}
+    .scene{
+      min-height:100vh;display:flex;align-items:center;justify-content:center;padding:18px;
+      transition:background .6s ease;
     }
+    .day{background:linear-gradient(#b3d9ff,#e6f2ff)}
+    .tarde{background:linear-gradient(#ffd6a5,#fff7ed)}
+    .noche{background:linear-gradient(#0b1220,#111a2e);color:#fff}
+    .boss{background:radial-gradient(circle at top,#2a0a0a,#070b14);color:#fff}
     .card{
-      width:92%;
-      max-width:560px;
-      background: rgba(255,255,255,.06);
-      border: 1px solid rgba(255,255,255,.12);
-      border-radius: 22px;
-      padding: 18px;
-      box-shadow: 0 14px 35px rgba(0,0,0,.45);
+      width:min(980px,95vw);background:rgba(255,255,255,.92);border-radius:22px;
+      box-shadow:0 18px 55px rgba(0,0,0,.22);padding:16px;
     }
-    h1{margin:6px 0 10px;}
-    .muted{opacity:.85}
-    button{
-      width:100%;
-      margin-top:12px;
-      padding:12px 14px;
-      border-radius:14px;
-      border:none;
-      background:#2f6bff;
-      color:#fff;
-      font-weight:900;
-      cursor:pointer;
-      box-shadow: 0 10px 22px rgba(47,107,255,.25);
+    .noche .card,.boss .card{background:rgba(255,255,255,.08);color:#fff;border:1px solid rgba(255,255,255,.12)}
+    h1{margin:0 0 6px}
+    .row{display:flex;gap:12px;flex-wrap:wrap;align-items:center}
+    .pill{display:inline-block;padding:6px 10px;border-radius:999px;background:#0ea5e9;color:#001019;font-weight:900}
+    .pill2{background:#22c55e;color:#02110a}
+    .pill3{background:#ef4444;color:#fff}
+    .grid{display:grid;grid-template-columns:1.2fr .8fr;gap:12px;margin-top:12px}
+    @media(max-width:980px){.grid{grid-template-columns:1fr}}
+    .box{background:rgba(0,0,0,.06);border:1px solid rgba(0,0,0,.08);border-radius:16px;padding:12px}
+    .noche .box,.boss .box{background:rgba(0,0,0,.25);border-color:rgba(255,255,255,.12)}
+    button{width:100%;padding:12px 14px;border-radius:14px;border:none;background:#004aad;color:#fff;font-weight:900;cursor:pointer;margin-top:10px}
+    button:hover{filter:brightness(.95)}
+    .opt{display:block;margin:10px 0;padding:10px 12px;border-radius:14px;border:1px solid rgba(0,0,0,.18);cursor:pointer}
+    .noche .opt,.boss .opt{border-color:rgba(255,255,255,.25)}
+    .opt input{margin-right:10px}
+    .list{white-space:pre-line;line-height:1.65;font-size:14px;min-height:120px}
+    .overlay{
+      position:fixed;inset:0;background:rgba(0,0,0,.78);display:none;align-items:center;justify-content:center;
+      padding:18px;z-index:50
     }
-    button:hover{filter:brightness(.95);}
-    .pill{display:inline-block;padding:3px 10px;border-radius:999px;background:rgba(255,255,255,.10);border:1px solid rgba(255,255,255,.14);}
+    .ovCard{
+      width:min(900px,96vw);background:#fff;border-radius:22px;padding:16px;box-shadow:0 20px 70px rgba(0,0,0,.55)
+    }
+    .ovTitle{font-size:22px;font-weight:1000;margin:0 0 6px}
+    .ovText{margin:0;line-height:1.6}
+    .chars{margin-top:12px;display:grid;grid-template-columns:1fr 1fr;gap:10px}
+    .char{background:#f6f7fb;border-radius:16px;padding:10px;border:1px solid #e8eaf3}
+    .char b{display:block;margin-bottom:6px}
+    .confetti{position:fixed;inset:0;pointer-events:none;z-index:60}
+    .podio{display:none;margin-top:10px}
+    .podio .row{justify-content:center}
+    .medal{font-size:38px}
   </style>
 </head>
 <body>
+  <div class="scene day" id="scene">
+    <div class="card">
+      <h1>🎮 Batalla Universitaria</h1>
+      <div class="row">
+        <span class="pill" id="salonTxt">Salón 1 (Día)</span>
+        <span class="pill2" id="meTxt">Yo: …</span>
+        <span class="pill3" id="vidaTxt">Vidas: …</span>
+        <span class="pill2" id="scoreTxt">Score: …</span>
+      </div>
 
-  <div class="card">
-    <h1>📚 Fase 2 — Aula</h1>
-    <div class="muted">
-      Si la Licda no ha iniciado, te regresa al Lobby automáticamente.
+      <div class="grid">
+        <div class="box">
+          <h3 style="margin:0 0 8px">📚 Pregunta</h3>
+          <div id="qText" style="font-weight:900;font-size:18px;line-height:1.4">Cargando…</div>
+          <div id="opts"></div>
+          <button id="btnSend">Enviar respuesta</button>
+          <div id="msg" style="margin-top:10px;font-weight:900"></div>
+        </div>
+
+        <div class="box">
+          <h3 style="margin:0 0 8px">👥 Salón en vivo</h3>
+          <div class="list" id="playersBox">Cargando…</div>
+
+          <div class="podio" id="podio">
+            <h3 style="margin:12px 0 6px">🏆 Podio</h3>
+            <div class="row">
+              <div style="text-align:center;margin:0 10px">
+                <div class="medal">🥇</div>
+                <div id="p1" style="font-weight:900"></div>
+              </div>
+              <div style="text-align:center;margin:0 10px">
+                <div class="medal">🥈</div>
+                <div id="p2" style="font-weight:900"></div>
+              </div>
+              <div style="text-align:center;margin:0 10px">
+                <div class="medal">🥉</div>
+                <div id="p3" style="font-weight:900"></div>
+              </div>
+            </div>
+            <p style="margin:8px 0 0;opacity:.9">🎉 La medalla oficial se la lleva el primer lugar.</p>
+          </div>
+        </div>
+      </div>
     </div>
-
-    <div style="margin-top:14px;">
-      Estado: <span class="pill" id="st">Cargando...</span>
-    </div>
-
-    <p class="muted" style="margin-top:14px;">
-      (Demo) Aquí van tus preguntas por niveles, vidas, expulsión y final.
-      Ya está conectada la fase: cuando Host ponga <b>PLAY</b> entras; si vuelve a <b>LOBBY</b> regresas.
-    </p>
-
-    <button onclick="window.location.href='./index.html'">Volver al Lobby</button>
   </div>
 
-  <script type="module">
-    import { listenState, getOrCreatePlayerId, playerSetStatus, heartbeat } from "./firebase.js";
+  <!-- Pausa global -->
+  <div class="overlay" id="overlay">
+    <div class="ovCard">
+      <div class="ovTitle" id="ovTitle">Pausa</div>
+      <p class="ovText" id="ovText"></p>
 
-    const st = document.getElementById("st");
-    const pid = getOrCreatePlayerId();
+      <div class="chars">
+        <div class="char">
+          <b>👔 Jefe (gris)</b>
+          “Sigue estudiando. Suerte para el siguiente curso.”
+        </div>
+        <div class="char">
+          <b>👩‍🏫 Licda (formal) + 🐶🐶🐶🐶🐶</b>
+          “Tranquilo, tú puedes. En la próxima lo lograrás. No te desanimes.”
+        </div>
+      </div>
+    </div>
+  </div>
 
-    setInterval(() => heartbeat(pid), 15000);
+  <canvas class="confetti" id="confetti"></canvas>
 
-    listenState((state) => {
-      const phase = state.phase || "lobby";
-      st.textContent = phase.toUpperCase();
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+  <script src="./firebase.js"></script>
 
-      if (phase !== "play") {
-        // Si no está en play, vuelve al lobby
-        window.location.href = "./index.html";
-      } else {
-        // Marcamos que está jugando
-        playerSetStatus(pid, "playing").catch(()=>{});
+  <script>
+    // ==== PREGUNTAS (3 niveles + jefe final) ====
+    const QUESTIONS = [
+      // NIVEL 1
+      { lvl:1, salon:"Salón 1 (Día)", q:"¿Qué es la experiencia del cliente?", a:["El precio que paga el cliente","La publicidad de la empresa","La percepción total del cliente en todas sus interacciones","Solo el servicio postventa"], ok:2 },
+      { lvl:1, salon:"Salón 1 (Día)", q:"¿En qué momento se construye la experiencia del cliente?", a:["Solo cuando compra","Solo cuando hay un problema","Antes, durante y después de la compra","Al final del proceso"], ok:2 },
+      { lvl:1, salon:"Salón 1 (Día)", q:"¿Cuál es el principal rol de los medios digitales en la experiencia del cliente?", a:["Reemplazar a las personas","Aumentar publicidad","Facilitar la interacción y el servicio al cliente","Reducir costos únicamente"], ok:2 },
+      { lvl:1, salon:"Salón 1 (Día)", q:"La tecnología en la experiencia del cliente debe verse como:", a:["Un fin en sí mismo","Un gasto innecesario","Un habilitador de la experiencia","Un reemplazo total de la atención humana"], ok:2 },
+
+      // NIVEL 2
+      { lvl:2, salon:"Salón 2 (Tarde)", q:"¿Cuál es el objetivo principal de una estrategia digital centrada en el cliente?", a:["Usar más plataformas","Reducir fricciones y generar valor","Automatizar todo","Tener presencia en redes sociales"], ok:1 },
+      { lvl:2, salon:"Salón 2 (Tarde)", q:"¿Qué característica es clave para una buena estrategia digital?", a:["Que cada canal funcione separado","Que solo exista un canal","Integración coherente entre canales","Uso exclusivo de tecnología"], ok:2 },
+      { lvl:2, salon:"Salón 2 (Tarde)", q:"¿Qué acción ayuda a mejorar la experiencia digital del cliente?", a:["No escuchar al cliente","Conocer sus necesidades y expectativas","Copiar a la competencia","Cambiar el logo"], ok:1 },
+      { lvl:2, salon:"Salón 2 (Tarde)", q:"¿Por qué es importante mantener un enfoque humano en lo digital?", a:["Porque la tecnología es limitada","Porque reduce costos","Porque detrás de cada interacción hay una persona","Porque lo digital no funciona solo"], ok:2 },
+
+      // NIVEL 3
+      { lvl:3, salon:"Salón 3 (Noche)", q:"¿Qué hace bien Amazon en su experiencia digital?", a:["Procesos complicados","Falta de atención postventa","Plataforma ágil y personalizada","Uso limitado de tecnología"], ok:2 },
+      { lvl:3, salon:"Salón 3 (Noche)", q:"¿Por qué Amazon es considerado un caso exitoso de experiencia del cliente?", a:["Por su publicidad","Por ofrecer precios bajos únicamente","Por facilitar todo el recorrido del cliente","Por eliminar la atención humana"], ok:2 },
+      { lvl:3, salon:"Salón 3 (Noche)", q:"¿Qué aspecto destaca en el ejemplo de Cemaco en Guatemala?", a:["Venta solo presencial","Falta de información digital","Uso de comercio electrónico para facilitar la compra","Procesos confusos para el cliente"], ok:2 },
+      { lvl:3, salon:"Salón 3 (Noche)", q:"¿Qué demuestra el caso de Cemaco respecto a los medios digitales?", a:["Que no son necesarios","Que mejoran la experiencia cuando se usan correctamente","Que solo sirven para grandes empresas","Que reemplazan al servicio físico"], ok:1 },
+      { lvl:3, salon:"Salón 3 (Noche)", q:"¿Qué problema mostró LATAM en su experiencia digital durante la pandemia?", a:["Exceso de tiendas físicas","Digitalización sin estrategia centrada en el cliente","Falta de redes sociales","Poca publicidad"], ok:1 },
+      { lvl:3, salon:"Salón 3 (Noche)", q:"¿Cuál fue un error clave en el caso LATAM desde la experiencia del cliente?", a:["Uso de tecnología avanzada","Atención clara y empática","Automatización excesiva sin enfoque humano","Integración correcta de canales"], ok:2 },
+
+      // JEFE FINAL
+      { lvl:4, salon:"Jefe Final", q:"¿Cuál es la conclusión más correcta sobre los medios digitales y la experiencia del cliente?",
+        a:["La tecnología lo resuelve todo","La experiencia depende solo del cliente","La experiencia depende de una estrategia digital bien gestionada y centrada en las personas","Lo digital elimina la necesidad de atención humana"],
+        ok:2
+      },
+    ];
+
+    // ==== Utils UI ====
+    const $ = (id)=>document.getElementById(id);
+    const scene = $("scene");
+    const opts = $("opts");
+    const qText = $("qText");
+    const msg = $("msg");
+    const playersBox = $("playersBox");
+
+    const overlay = $("overlay");
+    const ovTitle = $("ovTitle");
+    const ovText = $("ovText");
+
+    function heartsText(half){
+      const full = Math.floor((half||0)/2);
+      const halfH = ((half||0)%2) ? "💗" : "";
+      return "❤️".repeat(full)+halfH;
+    }
+
+    function applyScene(qIndex){
+      const q = QUESTIONS[qIndex] || QUESTIONS[0];
+      $("salonTxt").textContent = q.salon + (q.lvl===4 ? " 👹" : "");
+      scene.classList.remove("day","tarde","noche","boss");
+      if (q.lvl===1) scene.classList.add("day");
+      else if (q.lvl===2) scene.classList.add("tarde");
+      else if (q.lvl===3) scene.classList.add("noche");
+      else scene.classList.add("boss");
+    }
+
+    // ==== Identidad del jugador ====
+    const myId = localStorage.getItem("vdcc_playerId");
+    if (!myId) location.href="./indice.html";
+
+    // ==== Conexión a juego/state ====
+    DB.ref("game/state").on("value", (snap)=>{
+      const st = snap.val() || {status:"lobby", qIndex:0};
+      if (st.status !== "playing" && st.status !== "finished") {
+        location.href="./indice.html";
+        return;
+      }
+      if (st.status === "finished") showWinners();
+      const idx = st.qIndex ?? 0;
+      renderQuestion(idx);
+      applyScene(idx);
+    });
+
+    // ==== Render pregunta ====
+    let currentIndex = 0;
+    function renderQuestion(qIndex){
+      currentIndex = Math.max(0, Math.min(qIndex, QUESTIONS.length-1));
+      const q = QUESTIONS[currentIndex];
+      qText.textContent = q.q;
+
+      opts.innerHTML = "";
+      q.a.forEach((txt,i)=>{
+        const lab = document.createElement("label");
+        lab.className="opt";
+        lab.innerHTML = `<input type="radio" name="opt" value="${i}"> ${txt}${i===q.ok ? " ✅" : ""}`;
+        // (el check ✅ es visual; si no lo quieres visible, me dices y lo quito)
+        opts.appendChild(lab);
+      });
+
+      msg.textContent = "";
+    }
+
+    // ==== Jugadores en vivo ====
+    DB.ref("players").on("value",(snap)=>{
+      const obj=snap.val()||{};
+      const arr=Object.entries(obj).map(([id,p])=>({id,...p}))
+        .sort((a,b)=>(b.score||0)-(a.score||0));
+      if(!arr.length){ playersBox.textContent="No hay jugadores."; return; }
+      const lines = arr.map((p,i)=>`${i+1}) ${p.nombre} ${heartsText(p.heartsHalf)} | score=${p.score||0}${p.eliminado?" ❌":""}`);
+      playersBox.textContent = lines.join("\n");
+      // también actualiza mi info
+      const me = obj[myId];
+      if (me){
+        $("meTxt").textContent = "Yo: " + (me.nombre||"—");
+        $("vidaTxt").textContent = "Vidas: " + heartsText(me.heartsHalf);
+        $("scoreTxt").textContent = "Score: " + (me.score||0);
+        if (me.eliminado) {
+          msg.textContent = "❌ Estás fuera. Espera el final…";
+          $("btnSend").disabled = true;
+        }
       }
     });
-  </script>
 
+    // ==== Evento global (pausa) ====
+    DB.ref("game/event").on("value",(snap)=>{
+      const e = snap.val();
+      if (!e || !e.text) return;
+      // muestra pausa solo cuando sea expulsión o mensajes grandes
+      if (String(e.text).includes("❌") || String(e.text).includes("Pausa") || String(e.text).includes("Fuera")) {
+        showOverlay("⏸️ Pausa del salón", e.text, 4500);
+      }
+    });
+
+    function showOverlay(title, text, ms=4000){
+      ovTitle.textContent = title;
+      ovText.textContent = text;
+      overlay.style.display="flex";
+      setTimeout(()=>overlay.style.display="none", ms);
+    }
+
+    // ==== Responder ====
+    $("btnSend").addEventListener("click", ()=>{
+      const pick = document.querySelector('input[name="opt"]:checked');
+      if (!pick) return alert("Selecciona una respuesta 😊");
+      const choice = parseInt(pick.value,10);
+      submitAnswer(choice);
+    });
+
+    function submitAnswer(choice){
+      const q = QUESTIONS[currentIndex];
+      const correct = (choice === q.ok);
+
+      // Guarda respuesta
+      DB.ref(`answers/${currentIndex}/${myId}`).set({
+        choice, correct, ts: Date.now()
+      });
+
+      // Actualiza player (transaction)
+      DB.ref("players/"+myId).transaction((p)=>{
+        if (!p) return p;
+        if (p.eliminado) return p;
+
+        if (correct){
+          p.score = (p.score||0) + 10;
+          p.estado = "✅ Correcto";
+        } else {
+          // Pierde la mitad de corazones (medios corazones)
+          const cur = (p.heartsHalf ?? 10);
+          const newHalf = Math.max(0, Math.ceil(cur/2));
+          p.heartsHalf = newHalf;
+          p.estado = "❌ Incorrecto (pierde la mitad de vidas)";
+          if (newHalf <= 0) {
+            p.eliminado = true;
+            p.estado = "❌ Fuera";
+          }
+        }
+        p.lastAnswerAt = Date.now();
+        return p;
+      }, (err, committed, snap)=>{
+        if (err) { msg.textContent="Error guardando respuesta"; return; }
+        const me = snap.val();
+        if (!me) return;
+
+        if (correct) {
+          msg.textContent = "✅ Correcto. Sigues avanzando al siguiente salón…";
+        } else {
+          msg.textContent = "❌ Incorrecto. Pierdes la mitad de tus corazones.";
+          // si quedó eliminado: dispara evento global + pausa
+          if (me.eliminado) {
+            const texto = `❌ ${me.nombre} se quedó sin vidas. El jefe lo saca: “Sigue estudiando, suerte para el siguiente curso.”  
+La Licda corre con sus 🐶🐶🐶🐶🐶: “Tranquilo, tú puedes. En la próxima lo lograrás.”`;
+            DB.ref("game/event").set({ ts: Date.now(), text: texto });
+          }
+        }
+      });
+    }
+
+    // ==== Winners / Confetti ====
+    function showWinners(){
+      DB.ref("game/winners").get().then(snap=>{
+        const w = snap.val();
+        if (!w || !w.top3) return;
+        const t = w.top3;
+        $("podio").style.display="block";
+        $("p1").textContent = (t[0]?.nombre||"—") + ` (${t[0]?.score||0})`;
+        $("p2").textContent = (t[1]?.nombre||"—") + ` (${t[1]?.score||0})`;
+        $("p3").textContent = (t[2]?.nombre||"—") + ` (${t[2]?.score||0})`;
+        startConfetti(6500);
+        showOverlay("🏆 Final", "🎉 La Licda felicita al primer lugar con sus perritos 🐶🐶🐶🐶🐶", 4500);
+      });
+    }
+
+    // Confetti simple
+    const canvas = $("confetti");
+    const ctx = canvas.getContext("2d");
+    function resize(){ canvas.width=innerWidth; canvas.height=innerHeight; }
+    addEventListener("resize",resize); resize();
+    let confettiRun=false, confettiParts=[];
+    function startConfetti(ms=5000){
+      confettiRun=true; confettiParts=[];
+      for(let i=0;i<180;i++){
+        confettiParts.push({
+          x: Math.random()*canvas.width,
+          y: -20 - Math.random()*canvas.height,
+          r: 2 + Math.random()*4,
+          vy: 2 + Math.random()*6,
+          vx: -2 + Math.random()*4,
+          a: Math.random()*Math.PI*2,
+          va: -0.2 + Math.random()*0.4
+        });
+      }
+      const t0=Date.now();
+      (function loop(){
+        if(!confettiRun) return;
+        ctx.clearRect(0,0,canvas.width,canvas.height);
+        confettiParts.forEach(p=>{
+          p.x += p.vx; p.y += p.vy; p.a += p.va;
+          if(p.y>canvas.height+30){ p.y=-20; p.x=Math.random()*canvas.width; }
+          ctx.save();
+          ctx.translate(p.x,p.y);
+          ctx.rotate(p.a);
+          ctx.fillStyle = `hsl(${Math.random()*360},90%,60%)`;
+          ctx.fillRect(-p.r,-p.r,p.r*2,p.r*2);
+          ctx.restore();
+        });
+        if(Date.now()-t0>ms){ confettiRun=false; ctx.clearRect(0,0,canvas.width,canvas.height); return; }
+        requestAnimationFrame(loop);
+      })();
+    }
+  </script>
 </body>
 </html>
-
