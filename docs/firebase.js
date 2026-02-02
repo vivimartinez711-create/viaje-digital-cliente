@@ -1,17 +1,19 @@
-import { initializeApp } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js";
+// /docs/firebase.js  ✅ (ESM)
+// Firebase v10 modular via CDN (sirve en GitHub Pages)
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-app.js";
 import {
   getDatabase,
   ref,
   set,
-  update,
   push,
   onValue,
-  remove,
   onDisconnect,
-  serverTimestamp
-} from "https://www.gstatic.com/firebasejs/9.23.0/firebase-database.js";
+  serverTimestamp,
+  remove,
+  update
+} from "https://www.gstatic.com/firebasejs/10.12.5/firebase-database.js";
 
-// ✅ TU CONFIG (u07059)
+// ✅ Tu config REAL (la que me pegaste)
 const firebaseConfig = {
   apiKey: "AIzaSyD5Rx36FYLIi3nw09exLZrg3yU241DQ5gI",
   authDomain: "u07059.firebaseapp.com",
@@ -24,97 +26,74 @@ const firebaseConfig = {
 };
 
 const app = initializeApp(firebaseConfig);
-const db = getDatabase(app);
+export const db = getDatabase(app);
 
-const PATH = {
-  session: "session",
-  players: "players",
-  events: "events",
-  answers: "answers",
-};
+// RUTAS DB
+const rPhase = ref(db, "control/phase");         // "lobby" | "game" | "end"
+const rPlayers = ref(db, "lobby/players");       // lista jugadores
+const rEvents = ref(db, "events/last");          // texto último evento
 
-export {
-  db,
-  ref,
-  set,
-  update,
-  push,
-  onValue,
-  remove,
-  onDisconnect,
-  serverTimestamp
-};
+// Helpers
+const uid = () => "p_" + Math.random().toString(36).slice(2) + Date.now().toString(36);
 
-export function listenSession(cb) {
-  return onValue(ref(db, PATH.session), (snap) => cb(snap.val() || {}));
+// ✅ Unirse al lobby
+export async function joinLobby({ name, personaje, transporte, piel, pelo, blusa }) {
+  const playerId = uid();
+  const meRef = ref(db, `lobby/players/${playerId}`);
+
+  await set(meRef, {
+    name,
+    personaje,
+    transporte,
+    piel,
+    pelo,
+    blusa,
+    lives: 5,
+    joinedAt: serverTimestamp()
+  });
+
+  // ✅ si se cierra pestaña, se borra solo
+  onDisconnect(meRef).remove();
+
+  return { playerId };
 }
 
-export function setSession(data) {
-  // data ej: { phase:"lobby", startedAt: serverTimestamp() }
-  return update(ref(db, PATH.session), data);
-}
-
-export function setPhase(phase) {
-  return update(ref(db, PATH.session), { phase, updatedAt: serverTimestamp() });
-}
-
-export function joinLobby(playerId, playerData) {
-  // playerData ej: { name, vidas, personaje, piel, pelo, camisa, transporte }
-  const playerRef = ref(db, ${PATH.players}/${playerId});
-  // si cierran pestaña: lo borra (opcional pero recomendado)
-  onDisconnect(playerRef).remove();
-  return set(playerRef, {
-    ...playerData,
-    online: true,
-    updatedAt: serverTimestamp()
+// ✅ Escuchar lobby (lista + conteo)
+export function listenLobby(callback) {
+  return onValue(rPlayers, (snap) => {
+    const val = snap.val() || {};
+    const arr = Object.entries(val).map(([id, p]) => ({ id, ...p }));
+    callback(arr);
   });
 }
 
-export function updatePlayer(playerId, patch) {
-  return update(ref(db, ${PATH.players}/${playerId}), {
-    ...patch,
-    updatedAt: serverTimestamp()
+// ✅ Escuchar fase
+export function listenPhase(callback) {
+  return onValue(rPhase, (snap) => {
+    callback(snap.val() || "lobby");
   });
 }
 
-export function leaveLobby(playerId) {
-  return remove(ref(db, ${PATH.players}/${playerId}));
+// ✅ Host: mandar a Lobby
+export async function hostToLobby() {
+  await set(rPhase, "lobby");
+  await set(rEvents, "📣 La Licda mandó a todos al Lobby");
 }
 
-export function listenPlayers(cb) {
-  return onValue(ref(db, PATH.players), (snap) => cb(snap.val() || {}));
+// ✅ Host: iniciar juego
+export async function hostStart() {
+  await set(rPhase, "game");
+  await set(rEvents, "🎮 ¡Inició el juego! Entren a jugar");
 }
 
-export function addEvent(text) {
-  const evRef = push(ref(db, PATH.events));
-  return set(evRef, {
-    text,
-    at: serverTimestamp()
-  });
-}
-
-export function listenEvents(cb) {
-  return onValue(ref(db, PATH.events), (snap) => {
-    const data = snap.val() || {};
-    // convierte a array ordenado por inserción
-    const list = Object.entries(data).map(([id, v]) => ({ id, ...v }));
-    cb(list);
-  });
-}
-
-export function submitAnswer(playerId, payload) {
-  // payload ej: { qId, answer, correct, points }
-  const ansRef = push(ref(db, ${PATH.answers}/${playerId}));
-  return set(ansRef, { ...payload, at: serverTimestamp() });
-}
-
+// ✅ Host: reset total (borra players y vuelve a lobby)
 export async function hostResetAll() {
-  // Limpia todo para iniciar de cero
-  await set(ref(db, PATH.session), {
-    phase: "lobby",
-    updatedAt: serverTimestamp()
-  });
-  await remove(ref(db, PATH.players));
-  await remove(ref(db, PATH.events));
-  await remove(ref(db, PATH.answers));
+  await remove(rPlayers);
+  await set(rPhase, "lobby");
+  await set(rEvents, "🔁 Reset realizado (se limpió el lobby)");
+}
+
+// ✅ Eventos
+export function listenEvents(callback) {
+  return onValue(rEvents, (snap) => callback(snap.val() || "Aún no hay eventos..."));
 }
