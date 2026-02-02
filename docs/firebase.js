@@ -1,8 +1,5 @@
-<!-- Firebase CDN (compatible con GitHub Pages) -->
-<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
-
-<script>
+// documentos/firebase.js  (sin imports, GitHub Pages compatible)
+(function () {
   const firebaseConfig = {
     apiKey: "AIzaSyD5Rx36FYLIi3nw09exLZrg3yU241DQ5gI",
     authDomain: "u07059.firebaseapp.com",
@@ -13,6 +10,6 @@
     appId: "1:155102720783:web:30d81bcf84398d4316047a"
   };
 
-  firebase.initializeApp(firebaseConfig);
-  const db = firebase.database();
-</script>
+  if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
+  window.DB = firebase.database();
+})();
